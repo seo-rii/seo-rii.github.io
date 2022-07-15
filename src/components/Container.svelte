@@ -13,7 +13,7 @@
 
     @media screen and (min-width: 1200px) {
       div {
-        min-width: 1024px;
+        width: 1024px;
       }
     }
 

@@ -16,12 +16,12 @@
         ctx.clearRect(0, 0, innerWidth, innerHeight);
         for (let i of circle) {
             if (isNaN(i.x)) continue;
-            const radgrad = ctx.createRadialGradient(i.x, i.y - scrollY, 0, i.x, i.y - scrollY, i.r);
+            const radgrad = ctx.createRadialGradient(i.x, i.y - scrollY * i.parallax, 0, i.x, i.y - scrollY * i.parallax, i.r);
             radgrad.addColorStop(0, `rgba(${i.fill}, .04)`);
             radgrad.addColorStop(0.8, `rgba(${i.fill}, .01)`);
             radgrad.addColorStop(1, `rgba(${i.fill}, 0)`);
             ctx.beginPath();
-            ctx.arc(i.x, i.y - scrollY, i.r, 0, 2 * Math.PI);
+            ctx.arc(i.x, i.y - scrollY * i.parallax, i.r, 0, 2 * Math.PI);
             ctx.fillStyle = radgrad;
             ctx.fill();
             i.x += i.speedx;
@@ -44,7 +44,7 @@
                 i.y = -i.h;
             }
             ctx.filter = `brightness(${i.o})`;
-            ctx.drawImage(img, i.x, i.y - scrollY, i.w, i.h);
+            ctx.drawImage(img, i.x, i.y - scrollY * i.parallax, i.w, i.h);
         }
         requestAnimationFrame(snowdrop);
     }
@@ -77,11 +77,12 @@
 
                 snow.push({
                     x, y, w, h,
-                    o: [0.98, 0.91][Math.floor(Math.random() * 2)],
-                    speed: Math.random() * 0.2 + 0.02
+                    o: [0.98, 0.97, 0.89][Math.floor(Math.random() * 2)],
+                    speed: Math.random() * 0.2 + 0.02,
+                    parallax: Math.random() * 0.4 + 0.4
                 });
             }
-            for (let i = 0; i < 60; i++) {
+            for (let i = 0; i < innerHeight * innerWidth / 30000; i++) {
                 circle.push({
                     x: Math.random() * innerWidth,
                     y: Math.random() * document.scrollingElement.scrollHeight,
@@ -89,7 +90,8 @@
                     o: Math.random() * 0.5 + 0.5,
                     speedx: Math.random() * 1 + 0.02,
                     speedy: Math.random() * 1 + 0.02,
-                    fill: ['72, 117, 237', '99, 99, 99'][Math.floor(Math.random() * 2)]
+                    fill: ['72, 117, 237', '99, 99, 99'][Math.floor(Math.random() * 2)],
+                    parallax: Math.random() * 0.2 + 0.7
                 });
             }
             snowdrop();

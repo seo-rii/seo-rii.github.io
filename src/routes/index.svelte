@@ -5,6 +5,7 @@
     import Age1Svg from "../assets/1st.svg";
     import MailSvg from "../assets/mail.svg";
     import ToolSvg from "../assets/tool.svg";
+    import SchoolSvg from "../assets/school.svg";
 </script>
 
 <style lang="scss">
@@ -45,6 +46,14 @@
             </a>
         </Grid>
     </div>
+</Container>
+<Container>
+    <h1>
+        <SchoolSvg width="40" height="40" viewBox="0 0 512 512"/>
+        다닌 곳
+    </h1>
+    <p>인천과학예술영재학교를 나왔고, 현재 한국과학기술원 새내기과정학부 22학번으로 재학하고 있습니다.</p>
+    <p>한글과컴퓨터학원에서 조교 및 개발자로 근무하고 있습니다.</p>
 </Container>
 <Container>
     <h1>
