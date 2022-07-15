@@ -11,7 +11,7 @@
     "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "prettier --check --plugin-search-dir=. . && eslint .",
     "format": "prettier --write --plugin-search-dir=. .",
-    "page": "node gh-pages.js"
+    "page": "npm run build && node gh-pages.js"
   },
   "devDependencies": {
     "@poppanator/sveltekit-svg": "^0.3.4",

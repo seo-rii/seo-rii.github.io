@@ -38,10 +38,10 @@
                     <p>Github <span>@seo-rii</span></p>
                 </Region>
             </a>
-            <a>
+            <a href="mailto:studioseorii@gmail.com">
                 <Region>
                     <MailSvg width="50" height="50" viewBox="0 0 512 512"/>
-                    <p>Mail <span>studioSeoRii@gmail.com</span></p>
+                    <p>Mail <span>studioseorii@gmail.com</span></p>
                 </Region>
             </a>
         </Grid>
@@ -80,4 +80,14 @@
         받은 상
     </h1>
     <p>알고리즘 문제 해결을 좋아합니다. 몇 가지 상도 받았습니다.</p>
+    <ul>
+        <li>UCPC 2022 Qualification Round, 38th</li>
+        <li>KOI 2021, Final Round, Silver Medal</li>
+        <li>KCF 2018, FInal Round, 2nd place</li>
+        <li>KOI 2021, Qualification Round, Silver Medal</li>
+        <li>KOI 2019, Final Round, Bronze Medal</li>
+        <li>KOI 2019, Qualification Round, Silver Medal</li>
+        <li>KOI 2018, Final Round, Silver Medal</li>
+        <li>KOI 2018, Qualification Round, Silver Medal</li>
+    </ul>
 </Container>
