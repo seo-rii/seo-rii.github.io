@@ -10,6 +10,8 @@
     justify-content: center;
     align-items: center;
     background: #99999922;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: 10px;
     overflow: hidden;
     cursor: pointer;

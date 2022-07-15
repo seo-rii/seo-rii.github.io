@@ -1,7 +1,8 @@
 <script lang="ts">
     import {onMount} from "svelte";
+    import {tweened} from "svelte/motion";
 
-    let innerWidth, innerHeight, canvas, ctx, img, scrollY;
+    let innerWidth, innerHeight, canvas, ctx, img, scrollY, filt = 0;
     let snow = [], circle = [];
 
     $: {
@@ -11,19 +12,31 @@
         }
     }
 
+    $: filt = Math.min(15, Math.round((scrollY - 20) / 30));
+
+
     function snowdrop() {
         ctx.filter = '';
         ctx.clearRect(0, 0, innerWidth, innerHeight);
         for (let i of circle) {
             if (isNaN(i.x)) continue;
             const radgrad = ctx.createRadialGradient(i.x, i.y - scrollY * i.parallax, 0, i.x, i.y - scrollY * i.parallax, i.r);
-            radgrad.addColorStop(0, `rgba(${i.fill}, .04)`);
-            radgrad.addColorStop(0.8, `rgba(${i.fill}, .01)`);
+            radgrad.addColorStop(0, `rgba(${i.fill}, ${0.05 * i.o})`);
+            radgrad.addColorStop(0.8, `rgba(${i.fill}, ${0.01 * i.o})`);
             radgrad.addColorStop(1, `rgba(${i.fill}, 0)`);
             ctx.beginPath();
             ctx.arc(i.x, i.y - scrollY * i.parallax, i.r, 0, 2 * Math.PI);
             ctx.fillStyle = radgrad;
             ctx.fill();
+            i.o += i.d;
+            if (i.o > 1) {
+                i.o = 1;
+                i.d = -i.d;
+            }
+            if (i.o < 0) {
+                i.o = 0;
+                i.d = -i.d;
+            }
             i.x += i.speedx;
             i.y += i.speedy;
             i.speedx += Math.random() * 0.1 - 0.05;
@@ -82,12 +95,13 @@
                     parallax: Math.random() * 0.4 + 0.4
                 });
             }
-            for (let i = 0; i < innerHeight * innerWidth / 30000; i++) {
+            for (let i = 0; i < innerHeight * innerWidth / 10000; i++) {
                 circle.push({
                     x: Math.random() * innerWidth,
                     y: Math.random() * document.scrollingElement.scrollHeight,
                     r: Math.random() * 50 + 200,
-                    o: Math.random() * 0.5 + 0.5,
+                    o: Math.random(),
+                    d: Math.random() * 0.001 - 0.002,
                     speedx: Math.random() * 1 + 0.02,
                     speedy: Math.random() * 1 + 0.02,
                     fill: ['72, 117, 237', '99, 99, 99'][Math.floor(Math.random() * 2)],
@@ -108,4 +122,4 @@
 </style>
 
 <svelte:window bind:innerWidth bind:innerHeight bind:scrollY/>
-<canvas bind:this={canvas}></canvas>
+<canvas bind:this={canvas} style={`filter:blur(${filt}px);`}></canvas>
