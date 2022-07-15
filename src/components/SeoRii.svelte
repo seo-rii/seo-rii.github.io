@@ -12,7 +12,7 @@
         }
     }
 
-    $: filt = Math.min(15, Math.round((scrollY - 20) / 30));
+    $: filt = Math.min(25, Math.round((scrollY - 20) / 10));
 
 
     function snowdrop() {
@@ -120,6 +120,8 @@
         left: 0;
     }
 </style>
+
+<title>서리</title>
 
 <svelte:window bind:innerWidth bind:innerHeight bind:scrollY/>
 <canvas bind:this={canvas} style={`filter:blur(${filt}px);`}></canvas>
