@@ -1,6 +1,5 @@
 <script lang="ts">
     import {onDestroy, onMount} from "svelte";
-    import {tweened} from "svelte/motion";
 
     let innerWidth, innerHeight, canvas, ctx, img, scrollY, filt = 0, c2;
     let isMobile = false;
