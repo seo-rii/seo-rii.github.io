@@ -67,6 +67,7 @@
     <ul>
         <li>채점기를 포함한 모든 서비스를 재개발했습니다.</li>
         <li>프론트엔드는 스벨트를 사용한 SPA입니다. PWA도 지원합니다. 처음에는 리액트로 개발하다 스벨트로 전환했습니다.</li>
+        <li>웹어셈블리 기반으로 작성한 소스 코드 실행을 서버 없이 지원합니다.</li>
         <li>백엔드는 node와 typescript를 사용하여 제작했습니다. express 프레임워크를 사용했으며, 더욱 쉬운 MSA 개발을 위해 이를 래핑하는 <a href="https://github.com/HancomAC/bedrock" target="_blank">프레임워크</a>를 만들었습니다.</li>
         <li>MSA 구조를 채용했으며, 메시지 큐를 이용하여 무거운 작업을 비동기적으로 처리합니다.</li>
         <li><a href="https://github.com/HancomAC/crunchy" target="_blank">배포 도구</a> 역시 자체 개발했습니다. Github에 배포 시 자동으로 베타 서버에 배포되며, 버튼 클릭으로 이를 Production 서버에 배포할 수 있도록 자동화 했습니다.</li>
