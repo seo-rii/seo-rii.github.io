@@ -1,8 +1,4 @@
 {
-  "src/assets/1st.svg": {
-    "file": "immutable/assets/1st-9d7c646b.svg",
-    "src": "src/assets/1st.svg"
-  },
   "src/assets/mail.svg": {
     "file": "immutable/assets/mail-731d8130.svg",
     "src": "src/assets/mail.svg"
@@ -11,12 +7,16 @@
     "file": "immutable/assets/tool-65a67d50.svg",
     "src": "src/assets/tool.svg"
   },
+  "src/assets/1st.svg": {
+    "file": "immutable/assets/1st-9d7c646b.svg",
+    "src": "src/assets/1st.svg"
+  },
   "src/assets/school.svg": {
     "file": "immutable/assets/school-a2d107f1.svg",
     "src": "src/assets/school.svg"
   },
   ".svelte-kit/runtime/client/start.js": {
-    "file": "immutable/start-32e5098e.js",
+    "file": "immutable/start-ac5d30d5.js",
     "src": ".svelte-kit/runtime/client/start.js",
     "isEntry": true,
     "imports": [
@@ -50,7 +50,7 @@
     ]
   },
   "src/routes/index.svelte": {
-    "file": "immutable/pages/index.svelte-3a4044ae.js",
+    "file": "immutable/pages/index.svelte-7472bacf.js",
     "src": "src/routes/index.svelte",
     "isEntry": true,
     "isDynamicEntry": true,
@@ -58,7 +58,7 @@
       "_index-0679b3d5.js"
     ],
     "css": [
-      "immutable/assets/index-76799c62.css"
+      "immutable/assets/index-049e3933.css"
     ]
   },
   "_index-0679b3d5.js": {
@@ -69,7 +69,7 @@
     "src": "src/routes/__layout.css"
   },
   "src/routes/index.css": {
-    "file": "immutable/assets/index-76799c62.css",
+    "file": "immutable/assets/index-049e3933.css",
     "src": "src/routes/index.css"
   }
 }
