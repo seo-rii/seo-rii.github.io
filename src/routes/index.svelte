@@ -15,6 +15,7 @@
     & a {
       width: calc(100% - 20px);
       margin: 10px;
+      text-decoration: underline;
     }
   }
 
@@ -61,13 +62,15 @@
         만든 것
     </h1>
     <p>여러 프로그램을 만듭니다. 알고리즘 문제 해결용 코드부터 웹사이트까지 가리지 않고 만듭니다.</p>
-    <a href="//jungol.co.kr" target="_blank"><h3>Jungol</h3></a>
+    <a href="//beta.jungol.co.kr" target="_blank"><h3>Jungol</h3></a>
     <p>한글과컴퓨터학원에서 운영하는 온라인 저지를 리뉴얼 했습니다.</p>
     <ul>
         <li>채점기를 포함한 모든 서비스를 재개발했습니다.</li>
-        <li>프론트엔드는 스벨트를 사용하여 제작했습니다. 처음에는 리액트로 개발하다 스벨트로 전환했습니다.</li>
-        <li>백엔드는 node와 typescript를 사용하여 제작했습니다.</li>
-        <li>문제 채점기는 직접 구현했습니다. 이 채점기에서 일부 기능이 빠진 버전이 HANA라는 이름으로 오픈소스로 공개되어 있습니다.</li>
+        <li>프론트엔드는 스벨트를 사용한 SPA입니다. PWA도 지원합니다. 처음에는 리액트로 개발하다 스벨트로 전환했습니다.</li>
+        <li>백엔드는 node와 typescript를 사용하여 제작했습니다. express 프레임워크를 사용했으며, 더욱 쉬운 MSA 개발을 위해 이를 래핑하는 <a href="https://github.com/HancomAC/bedrock" target="_blank">프레임워크</a>를 만들었습니다.</li>
+        <li>MSA 구조를 채용했으며, 메시지 큐를 이용하여 무거운 작업을 비동기적으로 처리합니다.</li>
+        <li><a href="https://github.com/HancomAC/crunchy" target="_blank">배포 도구</a> 역시 자체 개발했습니다. Github에 배포 시 자동으로 베타 서버에 배포되며, 버튼 클릭으로 이를 Production 서버에 배포할 수 있도록 자동화 했습니다.</li>
+        <li>문제 채점기는 직접 구현했습니다. 이 채점기에서 일부 기능이 빠진 버전이 <a href="https://github.com/HancomAC/hana" target="_blank">HANA</a>라는 이름으로 오픈소스로 공개되어 있습니다.</li>
         <li>서비스는 구글 클라우드 플랫폼에서 이루어지며, Compute Engine같은 단순한 기능만이 아닌 Pubsub, Arc, GKE와 같은 기능을 적극적으로 활용했습니다.</li>
     </ul>
     <a href="//jungol.co.kr" target="_blank"><h3>AfterSchool</h3></a>
