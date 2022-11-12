@@ -74,7 +74,7 @@
 
   :global(a) {
     color: inherit;
-    text-decoration: none;
+    text-decoration: underline;
   }
 
   @keyframes -global-fadeIn {

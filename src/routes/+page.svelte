@@ -74,8 +74,17 @@
         <li>문제 채점기는 직접 구현했습니다. 이 채점기에서 일부 기능이 빠진 버전이 <a href="https://github.com/HancomAC/hana" target="_blank">HANA</a>라는 이름으로 오픈소스로 공개되어 있습니다.</li>
         <li>서비스는 구글 클라우드 플랫폼에서 이루어지며, Compute Engine같은 단순한 기능만이 아닌 Pubsub, Arc, GKE와 같은 기능을 적극적으로 활용했습니다.</li>
     </ul>
-    <a href="//jungol.co.kr" target="_blank"><h3>AfterSchool</h3></a>
+    <a href="//github.com/vlab-kaist/kaporido" target="_blank"><h3>kaporido</h3></a>
+    <p>카이스트-포스텍 학생대제전 인공지능부문 게임인 puoribor의 GUI 구현체입니다.</p>
+    <p>대회 안내 영상 제작에 사용되었습니다.</p>
+    <span href="" target="_blank"><h3>여기우리</h3></span>
+    <p>Dasty Inc.에서 개발하고 있는 메타버스 기반 커뮤니티 플랫폼입니다.</p>
+    <p>현재 개발 중입니다.</p>
+    <span href="" target="_blank"><h3>AfterSchool</h3></span>
     <p>문제 저장 및 포맷팅 프로그램입니다.</p>
+    <p>현재 개발 중입니다.</p>
+    <span href="" target="_blank"><h3>낮달</h3></span>
+    <p>논문 뷰어 서비스입니다.</p>
     <p>현재 개발 중입니다.</p>
 </Container>
 <Container>
@@ -85,6 +94,7 @@
     </h1>
     <p>알고리즘 문제 해결을 좋아합니다. 몇 가지 상도 받았습니다.</p>
     <ul>
+        <li>ICPC 2022 Seoul Regional Qualification Round, 16th</li>
         <li>UCPC 2022 Qualification Round, 38th</li>
         <li>KOI 2021, Final Round, Silver Medal</li>
         <li>KCF 2018, FInal Round, 2nd place</li>
