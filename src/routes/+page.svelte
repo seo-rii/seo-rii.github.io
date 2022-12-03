@@ -4,6 +4,7 @@
     import Container from "../components/Container.svelte";
     import Age1Svg from "../assets/1st.svg";
     import MailSvg from "../assets/mail.svg";
+    import LetterSvg from "../assets/letter.svg";
     import ToolSvg from "../assets/tool.svg";
     import SchoolSvg from "../assets/school.svg";
 </script>
@@ -32,16 +33,22 @@
     <h1>이 세상의 어떤 것을 만듭니다.</h1>
     <h4>이서현, KAIST 22</h4>
     <div class="link">
-        <Grid max="2">
+        <Grid max="3" width="300">
             <a href="//github.com/seo-rii" target="_blank">
                 <Region>
                     <img src="github.png" alt="github" height="50">
                     <p>Github <span>@seo-rii</span></p>
                 </Region>
             </a>
-            <a href="mailto:studioseorii@gmail.com">
+            <a href="//log.seorii.page" target="_blank">
                 <Region>
                     <MailSvg width="50" height="50" viewBox="0 0 512 512"/>
+                    <p>Blog <span>log.seorii.page</span></p>
+                </Region>
+            </a>
+            <a href="mailto:studioseorii@gmail.com">
+                <Region>
+                    <LetterSvg width="50" height="50" viewBox="0 0 32 32"/>
                     <p>Mail <span>studioseorii@gmail.com</span></p>
                 </Region>
             </a>
@@ -94,6 +101,7 @@
     </h1>
     <p>알고리즘 문제 해결을 좋아합니다. 몇 가지 상도 받았습니다.</p>
     <ul>
+        <li>ICPC 2022 Seoul Regional, 40th</li>
         <li>ICPC 2022 Seoul Regional Qualification Round, 16th</li>
         <li>UCPC 2022 Qualification Round, 38th</li>
         <li>KOI 2021, Final Round, Silver Medal</li>
