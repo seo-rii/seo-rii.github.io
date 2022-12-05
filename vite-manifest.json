@@ -1,4 +1,12 @@
 {
+  "src/assets/mail.svg": {
+    "file": "_app/immutable/assets/mail-731d8130.svg",
+    "src": "src/assets/mail.svg"
+  },
+  "src/assets/tool.svg": {
+    "file": "_app/immutable/assets/tool-65a67d50.svg",
+    "src": "src/assets/tool.svg"
+  },
   "src/assets/letter.svg": {
     "file": "_app/immutable/assets/letter-8b7604d8.svg",
     "src": "src/assets/letter.svg"
@@ -6,14 +14,6 @@
   "src/assets/1st.svg": {
     "file": "_app/immutable/assets/1st-9d7c646b.svg",
     "src": "src/assets/1st.svg"
-  },
-  "src/assets/tool.svg": {
-    "file": "_app/immutable/assets/tool-65a67d50.svg",
-    "src": "src/assets/tool.svg"
-  },
-  "src/assets/mail.svg": {
-    "file": "_app/immutable/assets/mail-731d8130.svg",
-    "src": "src/assets/mail.svg"
   },
   "src/assets/school.svg": {
     "file": "_app/immutable/assets/school-a2d107f1.svg",
@@ -97,12 +97,12 @@
       "src/routes/+page.svelte"
     ]
   },
-  "src/routes/+page.css": {
-    "file": "_app/immutable/assets/_page-049e3933.css",
-    "src": "src/routes/+page.css"
-  },
   "src/routes/+layout.css": {
     "file": "_app/immutable/assets/_layout-37f7e39f.css",
     "src": "src/routes/+layout.css"
+  },
+  "src/routes/+page.css": {
+    "file": "_app/immutable/assets/_page-049e3933.css",
+    "src": "src/routes/+page.css"
   }
 }
