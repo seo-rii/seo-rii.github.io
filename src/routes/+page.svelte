@@ -46,10 +46,10 @@
                     <p>Blog <span>log.seorii.page</span></p>
                 </Region>
             </a>
-            <a href="mailto:studioseorii@gmail.com">
+            <a href="mailto:me@seorii.page">
                 <Region>
                     <LetterSvg width="50" height="50" viewBox="0 0 32 32"/>
-                    <p>Mail <span>studioseorii@gmail.com</span></p>
+                    <p>Mail <span>me@seorii.page</span></p>
                 </Region>
             </a>
         </Grid>
