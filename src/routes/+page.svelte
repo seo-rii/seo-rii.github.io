@@ -60,8 +60,8 @@
         <SchoolSvg width="40" height="40" viewBox="0 0 512 512"/>
         다닌 곳
     </h1>
-    <p>인천과학예술영재학교를 나왔고, 현재 한국과학기술원 새내기과정학부 22학번으로 재학하고 있습니다.</p>
-    <p>한글과컴퓨터학원에서 조교 및 개발자로 근무하고 있습니다.</p>
+    <p>인천과학예술영재학교를 나왔고, 현재 한국과학기술원 전산학부 22학번으로 재학하고 있습니다.</p>
+    <p>주식회사 여기우리에서 개발자로 근무하고 있으며, 한글과컴퓨터학원에서도 조교 및 개발자로 근무하고 있습니다.</p>
 </Container>
 <Container>
     <h1>
@@ -84,8 +84,8 @@
     <a href="//github.com/vlab-kaist/kaporido" target="_blank"><h3>kaporido</h3></a>
     <p>카이스트-포스텍 학생대제전 인공지능부문 게임인 puoribor의 GUI 구현체입니다.</p>
     <p>대회 안내 영상 제작에 사용되었습니다.</p>
-    <span href="" target="_blank"><h3>여기우리</h3></span>
-    <p>Dasty Inc.에서 개발하고 있는 메타버스 기반 커뮤니티 플랫폼입니다.</p>
+    <a href="https://herewe.space" target="_blank"><h3>여기우리</h3></a>
+    <p>여기우리 주식회사에서 개발하고 있는 메타버스 기반 커뮤니티 플랫폼입니다.</p>
     <p>현재 개발 중입니다.</p>
     <span href="" target="_blank"><h3>AfterSchool</h3></span>
     <p>문제 저장 및 포맷팅 프로그램입니다.</p>
@@ -105,7 +105,7 @@
         <li>ICPC 2022 Seoul Regional Qualification Round, 16th</li>
         <li>UCPC 2022 Qualification Round, 38th</li>
         <li>KOI 2021, Final Round, Silver Medal</li>
-        <li>KCF 2018, FInal Round, 2nd place</li>
+        <li>KCF 2018, Final Round, 2nd place</li>
         <li>KOI 2021, Qualification Round, Silver Medal</li>
         <li>KOI 2019, Final Round, Bronze Medal</li>
         <li>KOI 2019, Qualification Round, Silver Medal</li>
