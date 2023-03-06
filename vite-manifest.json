@@ -1,26 +1,26 @@
 {
-  "src/assets/mail.svg": {
-    "file": "_app/immutable/assets/mail-731d8130.svg",
-    "src": "src/assets/mail.svg"
-  },
   "src/assets/tool.svg": {
     "file": "_app/immutable/assets/tool-65a67d50.svg",
     "src": "src/assets/tool.svg"
   },
-  "src/assets/letter.svg": {
-    "file": "_app/immutable/assets/letter-8b7604d8.svg",
-    "src": "src/assets/letter.svg"
+  "src/assets/mail.svg": {
+    "file": "_app/immutable/assets/mail-731d8130.svg",
+    "src": "src/assets/mail.svg"
   },
   "src/assets/1st.svg": {
     "file": "_app/immutable/assets/1st-9d7c646b.svg",
     "src": "src/assets/1st.svg"
+  },
+  "src/assets/letter.svg": {
+    "file": "_app/immutable/assets/letter-8b7604d8.svg",
+    "src": "src/assets/letter.svg"
   },
   "src/assets/school.svg": {
     "file": "_app/immutable/assets/school-a2d107f1.svg",
     "src": "src/assets/school.svg"
   },
   "node_modules/.pnpm/@sveltejs+kit@1.0.0-next.571_svelte@3.53.1+vite@3.2.4/node_modules/@sveltejs/kit/src/runtime/client/start.js": {
-    "file": "_app/immutable/start-cdabfedd.js",
+    "file": "_app/immutable/start-0c6a1766.js",
     "src": "node_modules/.pnpm/@sveltejs+kit@1.0.0-next.571_svelte@3.53.1+vite@3.2.4/node_modules/@sveltejs/kit/src/runtime/client/start.js",
     "isEntry": true,
     "imports": [
@@ -54,7 +54,7 @@
     ]
   },
   "src/routes/+page.svelte": {
-    "file": "_app/immutable/components/pages/_page.svelte-8a40362f.js",
+    "file": "_app/immutable/components/pages/_page.svelte-55805f21.js",
     "src": "src/routes/+page.svelte",
     "isEntry": true,
     "imports": [
@@ -90,7 +90,7 @@
     ]
   },
   ".svelte-kit/generated/nodes/2.js": {
-    "file": "_app/immutable/chunks/2-f4a1d364.js",
+    "file": "_app/immutable/chunks/2-cd7935a4.js",
     "src": ".svelte-kit/generated/nodes/2.js",
     "isDynamicEntry": true,
     "imports": [
