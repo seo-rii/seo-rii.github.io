@@ -46,7 +46,7 @@
     height: 100%;
     margin: 0;
     padding: 0;
-    background: #f1f1f1;
+    background: #f8f8f8;
   }
 
   :global(*) {

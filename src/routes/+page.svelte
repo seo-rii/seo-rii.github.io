@@ -7,6 +7,7 @@
     import LetterSvg from "../assets/letter.svg";
     import ToolSvg from "../assets/tool.svg";
     import SchoolSvg from "../assets/school.svg";
+    import GearSvg from "../assets/gear.svg";
 </script>
 
 <style lang="scss">
@@ -69,7 +70,7 @@
         만든 것
     </h1>
     <p>여러 프로그램을 만듭니다. 알고리즘 문제 해결용 코드부터 웹사이트까지 가리지 않고 만듭니다.</p>
-    <a href="//beta.jungol.co.kr" target="_blank"><h3>Jungol</h3></a>
+    <a href="https://jungol.co.kr" target="_blank"><h3>Jungol</h3></a>
     <p>한글과컴퓨터학원에서 운영하는 온라인 저지를 리뉴얼 했습니다.</p>
     <ul>
         <li>채점기를 포함한 모든 서비스를 재개발했습니다.</li>
@@ -96,19 +97,47 @@
 </Container>
 <Container>
     <h1>
+        <GearSvg width="40" height="40" viewBox="0 0 32 32"/>
+        오픈소스
+    </h1>
+    <p>몇 가지 오픈소스를 만들었습니다. 저 또한 많은 오픈소스를 이용하고 있기에, 저도 다른 사람들을 위해 코드를 공유하려 합니다.</p>
+    <a href="https://github.com/seo-rii/electron-acrylic-window" target="_blank"><h3>electron-acrylic-window (deprecated)</h3></a>
+    <ul>
+        <li>윈도우 10/11에서 electron 프로그램의 배경에 아크릴 효과를 부여하는 모듈입니다.</li>
+    </ul>
+    <a href="https://seorii.page/tiptap" target="_blank"><h3>@seorii/tiptap</h3></a>
+    <ul>
+        <li>tiptap 기반으로 여러 모듈을 추가한 WYSIWYG 에디터입니다.</li>
+    </ul>
+    <a href="https://seorii.page/nunui" target="_blank"><h3>nunui</h3></a>
+    <ul>
+        <li>Material 3 기반 스벨트 컴포넌트 라이브러리입니다.</li>
+        <li>Jungol 등 다양한 프로젝트에 사용되었습니다.</li>
+    </ul>
+    <a href="https://seorii.page/wasm-idle" target="_blank"><h3>wasm-idle</h3></a>
+    <ul>
+        <li>웹어셈블리 기반으로 작성한 소스 코드 실행기입니다.</li>
+        <li>C++, Python 코드를 서버 없이 실행시킬 수 있습니다.</li>
+    </ul>
+</Container>
+<Container>
+    <h1>
         <Age1Svg width="40" height="40" viewBox="0 0 1024 1024"/>
         받은 상
     </h1>
     <p>알고리즘 문제 해결을 좋아합니다. 몇 가지 상도 받았습니다.</p>
     <ul>
+        <li>UCPC 2023 Final Round, 38th</li>
+        <li>UCPC 2023 Qualification Round, 40th</li>
         <li>ICPC 2022 Seoul Regional, 40th</li>
         <li>ICPC 2022 Seoul Regional Qualification Round, 16th</li>
+        <li>UCPC 2022 Final Round, 39th</li>
         <li>UCPC 2022 Qualification Round, 38th</li>
         <li>KOI 2021, Final Round, Silver Medal</li>
-        <li>KCF 2018, Final Round, 2nd place</li>
         <li>KOI 2021, Qualification Round, Silver Medal</li>
         <li>KOI 2019, Final Round, Bronze Medal</li>
         <li>KOI 2019, Qualification Round, Silver Medal</li>
+        <li>KCF 2018, Final Round, 2nd place</li>
         <li>KOI 2018, Final Round, Silver Medal</li>
         <li>KOI 2018, Qualification Round, Silver Medal</li>
     </ul>
