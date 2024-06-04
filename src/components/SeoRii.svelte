@@ -173,7 +173,7 @@
     }
 </style>
 
-<title>서리</title>
+<title>seorii</title>
 
 <canvas bind:this={c2} style="opacity: 0;"></canvas>
 <svelte:window bind:innerWidth bind:innerHeight bind:scrollY/>
