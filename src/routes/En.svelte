@@ -83,6 +83,8 @@
     <a href="//github.com/seo-rii/kaporido_v2" target="_blank"><h3>kaporido</h3></a>
     <p>This is the GUI implementation of puoribor, a official game environment in the AI division of 2023 KAIST-POSTECH
         student competition.</p>
+    <p>You can find <a href="//github.com/seo-rii/loq2">SDK</a> over here. It is an API for python env, and it's fast
+        since it's written in C++.</p>
     <span href="" target="_blank"><h3>Naddal</h3></span>
     <p>Paper viewer service.</p>
     <p>It is currently being developed.</p>

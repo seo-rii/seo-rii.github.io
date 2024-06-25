@@ -71,9 +71,10 @@
     <a href="https://codepass.co.kr" target="_blank"><h3>codepass</h3></a>
     <p>Jungol의 B2B 버전입니다..</p>
     <p>삼성전자 DS부서, 삼성 디스플레이, Semes, and Steco와 같은 회사에서 알고리즘 교육용으로 사용되고 있습니다.</p>
-    <a href="//github.com/vlab-kaist/kaporido" target="_blank"><h3>kaporido</h3></a>
-    <p>카이스트-포스텍 학생대제전 인공지능부문 게임인 puoribor의 GUI 구현체입니다.</p>
-    <p>대회 안내 영상 제작에 사용되었습니다.</p>
+    <a href="//github.com/seo-rii/kaporido_v2" target="_blank"><h3>kaporido</h3></a>
+    <p>2023년 카이스트-포스텍 학생대제전 인공지능부문 게임인 puoribor의 GUI 구현체입니다.</p>
+    <p>SDK는 <a href="//github.com/seo-rii/loq2">여기</a> 있습니다. 파이썬에서 환경과 상호작용 할 수 있도록 만들어졌으며, C++으로 작성되어 빠르게 상호작용 할 수
+        있습니다.</p>
     <span href="" target="_blank"><h3>AfterSchool</h3></span>
     <p>문제 저장 및 포맷팅 프로그램입니다.</p>
     <p>현재 개발 중입니다.</p>
