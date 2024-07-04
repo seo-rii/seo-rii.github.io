@@ -6,11 +6,13 @@
 <script lang="ts">
     import {fade} from "svelte/transition";
     import SeoRii from "$comp/SeoRii.svelte";
+    import GA from "./GA.svelte";
 
     const pageTransitionDuration = 200;
     export let url;
 </script>
 
+<GA/>
 <SeoRii/>
 <main>
     {#key url}
