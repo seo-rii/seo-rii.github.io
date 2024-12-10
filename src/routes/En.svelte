@@ -41,12 +41,11 @@
         <SchoolSvg width="40" height="40" viewBox="0 0 512 512"/>
         Where I was
     </h1>
-    <p>I am currently attending the School of Computing,
-        Korea Advanced Institute of Science and Technology since 2022.</p>
-    <p>I graduated Incheon Academy of Science and Arts.</p>
-    <p>From December 2021 to August 22, I worked as a developer at Herewe, Inc. At there, I developed PLAT, a metaverse
-        based community tool.</p>
-    <p>I work as an teaching assistant and developer at the HancomEducation.</p>
+    <p>I graduated from Incheon Science High School for the Gifted and am currently studying in the Department of Computer Science at KAIST, class of '22.</p>
+    <p>I worked as a developer at HereWeAre Co., Ltd. from December 2022 to August 2023. I developed a metaverse community called PLAT.</p>
+    <p>I worked as an intern in the ML team at Ringle Education Co., Ltd. from July 2024 to November 2024.</p>
+    <p>I served as the president of the AI club VLAB from September 2023 to May 2024. I am still active as a regular member.</p>
+    <p>I will be working as a lab intern at CASys Lab starting from December 2024.</p>
 </Container>
 <Container>
     <h1>
@@ -62,6 +61,7 @@
         <li>Supports serverless execution of source code created based on WASM.</li>
         <li>Implemented LSP functionality to support intelligence in web editors.</li>
         <li>Backend was built using nodejs. It uses HonoJS framework.</li>
+        <li>I implemented e2e type safety framework for safe frontend development.</li>
         <li>I adopted the MSA structure.</li>
         <li><a href="https://github.com/HancomAC/crunchy" target="_blank">Deployment tool</a> is also
             self-developed. It automatically creates dev preview when deployed on Github.
@@ -75,6 +75,8 @@
         <li>The service is on the Google Cloud platform, and it actively utilized features like Pubsub, Arc, and GKE,
             not simple features like Compute Engine.
         </li>
+        <li>I use Terraform to manage Infrastructure as Code.</li>
+        <li>I use Sentry to collect error log automatically and fix it.</li>
     </ul>
     <a href="https://codepass.co.kr" target="_blank"><h3>codepass</h3></a>
     <p>Enterprise service version of Jungol.</p>
@@ -85,9 +87,21 @@
         student competition.</p>
     <p>You can find <a href="//github.com/seo-rii/loq2">SDK</a> over here. It is an API for python env, and it's fast
         since it's written in C++.</p>
-    <span href="" target="_blank"><h3>Naddal</h3></span>
-    <p>Paper viewer service.</p>
-    <p>It is currently being developed.</p>
+    <a href="https://ttl.seorii.page" target="_blank"><h3>TTL</h3></a>
+    <p>This is a timetable creation website for KAIST.</p>
+    <p>It automatically crawls and updates timetables from the academic system.</p>
+    <p>Approximately 2000 users (WAU) use it during the course registration week.</p>
+    <a href="https://www.ringleplus.com" target="_blank"><h3>Ringle AI Tutor</h3></a>
+    <p>I developed the AI Tutor feature for Ringle.</p>
+    <ul>
+            <li>Used React/React Native/Ruby on Rails.</li>
+            <li>Worked with technologies related to streaming processing/audio processing.</li>
+    </ul>
+    <p>Improved the AI evaluation system.</p>
+    <ul>
+            <li>Optimized Python code to improve speed by about 5 times, enabling real-time voice diagnosis functionality.</li>
+            <li>Worked on infrastructure aspects such as processing pipelines/k8s deployment.</li>
+    </ul>
 </Container>
 <Container>
     <h1>
@@ -123,6 +137,8 @@
     </h1>
     <p>I like to solve algorithm problems. I've got some awards from them.</p>
     <ul>
+        <li>ICPC 2024 Seoul Regional, 64th</li>
+        <li>ICPC 2024 Seoul Regional Qualification Round, 45th</li>
         <li>UCPC 2023 Final Round, 38th</li>
         <li>UCPC 2023 Qualification Round, 40th</li>
         <li>ICPC 2022 Seoul Regional, 40th</li>
