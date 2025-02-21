@@ -42,10 +42,10 @@
         다닌 곳
     </h1>
     <p>인천과학예술영재학교를 나왔고, 현재 한국과학기술원 전산학부 22학번으로 재학하고 있습니다.</p>
-    <p>주식회사 여기우리에서 22년 12월부터 23년 8월까지 개발자로 근무했었습니다. PLAT이라는 메타버스 커뮤니티를 개발했습니다.</p>
+    <p><a href="https://dimension.company/">The Dimension Company</a>에서 22년 12월부터 23년 8월까지 개발자로 근무했었습니다. PLAT이라는 메타버스 커뮤니티를 개발했습니다.</p>
     <p>주식회사 링글에듀케이션에서 24년 7월부터 24년 11월까지 ML팀 인턴으로 근무했었습니다.</p>
     <p>인공지능 동아리 VLAB에서 23년 9월부터 24년 5월까지 회장직을 맡았습니다. 현재도 일반 회원으로써 계속 활동하고 있습니다.</p>
-    <p>CASys Lab에서 24년 12월부터 랩인턴으로 근무합니다.</p>
+    <p><a href="https://casyslab.kaist.ac.kr/">CASYS Lab</a>에서 24년 12월부터 25년 3월까지 랩인턴으로 근무했습니다. Tiered Memory 시스템과 관련한 연구를 진행했습니다.</p>
 </Container>
 <Container>
     <h1>
@@ -57,13 +57,13 @@
     <p>한글과컴퓨터학원에서 운영하는 온라인 저지를 리뉴얼 했습니다.</p>
     <ul>
         <li>채점기를 포함한 모든 서비스를 재개발했습니다.</li>
-        <li>프론트엔드는 스벨트를 사용한 SPA입니다.</li>
-        <li>웹어셈블리 기반으로 작성한 소스 코드 실행을 서버 없이 지원합니다.</li>
+        <li>프론트엔드는 스벨트를 사용한 MPA입니다.</li>
+        <li>웹어셈블리 기반으로 작성한 소스 코드 실행을 서버 없이 지원합니다. gcc와 ld의 웹어셈블리를 이용하여 컴파일도 프론트엔드에서 수행합니다. 파이썬 실행은 pyodide를 이용합니다.</li>
         <li>LSP 서버를 구현해 웹에서 인텔리센스를 사용하여 코딩할 수 있습니다.</li>
         <li>백엔드는 node와 typescript를 사용하여 제작했습니다. honojs 프레임워크를 사용했으며, 더욱 쉬운 MSA 개발을 위해 이를 래핑하는 <a
                 href="https://github.com/HancomAC/bedrock" target="_blank">프레임워크</a>를 만들었습니다.
         </li>
-        <li>자체적인 e2e type safety 프레임워크를 구현하여 개발에 사용중입니다.</li>
+        <li>Tanstack Query와 유사한 자체 쿼리 프레임워크를 구현했습니다. E2E type safety를 지원하며, 간단한 설정으로 SSR에서 로딩할 데이터를 설정할 수도 있습니다.</li>
         <li>MSA 구조를 채용했으며, 메시지 큐를 이용하여 무거운 작업을 비동기적으로 처리합니다.</li>
         <li><a href="https://github.com/HancomAC/crunchy" target="_blank">배포 도구</a> 역시 자체 개발했습니다. Github에 배포 시 자동으로 베타
             서버에 배포되며, 버튼 클릭으로 이를 Production 서버에 배포할 수 있도록 자동화 했습니다.
@@ -77,7 +77,7 @@
     </ul>
     <a href="https://codepass.co.kr" target="_blank"><h3>codepass</h3></a>
     <p>Jungol의 B2B 버전입니다.</p>
-    <p>삼성전자 DS부서, 삼성 디스플레이, Semes, and Steco와 같은 회사에서 알고리즘 교육용으로 사용되고 있습니다.</p>
+    <p>현재 삼성전자 DS부서(Overseas 포함), 삼성 디스플레이, Semes, and Steco와 같은 회사에서 알고리즘 교육용으로 사용되고 있습니다.</p>
     <a href="//github.com/seo-rii/kaporido_v2" target="_blank"><h3>kaporido</h3></a>
     <p>2023년 카이스트-포스텍 학생대제전 인공지능부문 게임인 puoribor의 GUI 구현체입니다.</p>
     <p>SDK는 <a href="//github.com/seo-rii/loq2">여기</a> 있습니다. 파이썬에서 환경과 상호작용 할 수 있도록 만들어졌으며, C++으로 작성되어 빠르게 상호작용 할 수
@@ -85,7 +85,8 @@
     <a href="https://ttl.seorii.page" target="_blank"><h3>TTL</h3></a>
     <p>카이스트 시간표 작성 웹사이트입니다.</p>
     <p>학사시스템에서 자동으로 시간표를 크롤링하여 업데이트합니다.</p>
-    <p>수강신청 주간에 약 2000명의 유저(WAU)가 사용합니다.</p>
+    <p>수강신청 주간에 평균 약 2,000명의 유저(WAU)가 사용합니다.</p>
+    <p>최대 동시접속자(30분간 세션) 1,400명을 기록했습니다.</p>
     <a href="https://www.ringleplus.com" target="_blank"><h3>Ringle AI Tutor</h3></a>
     <p>링글의 AI Tutor 기능을 개발했습니다.</p>
     <ul>
@@ -96,6 +97,14 @@
     <ul>
         <li>파이썬 코드를 최적화해 속도를 약 5배정도 향상시켰습니다. 이를 통해 실시간 음성 진단 기능을 구현했습니다.</li>
         <li>처리 파이프라인/k8s 배포와 같은 인프라 부분도 작업했습니다.</li>
+    </ul>
+    <h3>PLAT</h3>
+    <p>메타버스 커뮤니티입니다. 여기우리(현 The Dimension Company)에서 초기에 개발했던 제품입니다.</p>
+    <ul>
+        <li>Three.js 기반의 메타버스 커뮤니티입니다. 3차원 객체 배치 및 연산을 위한 헬퍼 라이브러리를 자체 개발했습니다.</li>
+        <li>WebRTC를 사용하여 화상 통화를 구현했습니다.</li>
+        <li>메시지 큐를 사용하여 수평 확장 가능한 WS 시스템을 구현했습니다.</li>
+        <li>스벨트 기반의 플러그인 시스템을 구현했습니다.</li>
     </ul>
 </Container>
 <Container>
@@ -133,6 +142,8 @@
     <ul>
         <li>ICPC 2024 Seoul Regional, 64th</li>
         <li>ICPC 2024 Seoul Regional Qualification Round, 45th</li>
+        <li>UCPC 2024 Final Round, 44th</li>
+        <li>UCPC 2024 Qualification Round, 45th</li>
         <li>UCPC 2023 Final Round, 38th</li>
         <li>UCPC 2023 Qualification Round, 40th</li>
         <li>ICPC 2022 Seoul Regional, 40th</li>
@@ -146,5 +157,7 @@
         <li>KCF 2018, Final Round, 2nd place</li>
         <li>KOI 2018, Final Round, Silver Medal</li>
         <li>KOI 2018, Qualification Round, Silver Medal</li>
+
+        <li>Incheon student SW hackathon 2020, 1st</li>
     </ul>
 </Container>

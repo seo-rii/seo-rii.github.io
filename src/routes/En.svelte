@@ -42,10 +42,10 @@
         Where I was
     </h1>
     <p>I graduated from Incheon Science High School for the Gifted and am currently studying in the Department of Computer Science at KAIST, class of '22.</p>
-    <p>I worked as a developer at HereWeAre Co., Ltd. from December 2022 to August 2023. I developed a metaverse community called PLAT.</p>
+    <p>I worked as a developer at <a href="https://dimension.company/">The Dimension Company</a> from December 2022 to August 2023. I developed a metaverse community called PLAT.</p>
     <p>I worked as an intern in the ML team at Ringle Education Co., Ltd. from July 2024 to November 2024.</p>
     <p>I served as the president of the AI club VLAB from September 2023 to May 2024. I am still active as a regular member.</p>
-    <p>I will be working as a lab intern at CASys Lab starting from December 2024.</p>
+    <p>I worked on <a href="https://casyslab.kaist.ac.kr/">CASYS Lab</a> as a research intern from December 2024 to February 2025. I researched on multi-tiered memory system.</p>
 </Container>
 <Container>
     <h1>
@@ -57,11 +57,11 @@
     <p>I renewed algorithm training website run by HancomEducation.</p>
     <ul>
         <li>I've redeveloped all services, including judger.</li>
-        <li>The frontend is a SPA using a Svelte.</li>
-        <li>Supports serverless execution of source code created based on WASM.</li>
+        <li>The frontend is a MPA using a Svelte.</li>
+        <li>Supports serverless execution of source code created based on WASM. It compiles C code on-device using wasm version of gcc/ld. It uses pyodide to run python code.</li>
         <li>Implemented LSP functionality to support intelligence in web editors.</li>
         <li>Backend was built using nodejs. It uses HonoJS framework.</li>
-        <li>I implemented e2e type safety framework for safe frontend development.</li>
+        <li>I implemented my own api query framework like tanstack-query. It supports e2e-type-safety, and optional SSR with easy config.</li>
         <li>I adopted the MSA structure.</li>
         <li><a href="https://github.com/HancomAC/crunchy" target="_blank">Deployment tool</a> is also
             self-developed. It automatically creates dev preview when deployed on Github.
@@ -80,7 +80,7 @@
     </ul>
     <a href="https://codepass.co.kr" target="_blank"><h3>codepass</h3></a>
     <p>Enterprise service version of Jungol.</p>
-    <p>Companies such as Samsung Electronics' DS division, Samsung Display, Semes, and Steco are using it for algorithm
+    <p>Companies such as Samsung Electronics' DS division(including Overseas), Samsung Display, Semes, and Steco are using it for algorithm
         training.</p>
     <a href="//github.com/seo-rii/kaporido_v2" target="_blank"><h3>kaporido</h3></a>
     <p>This is the GUI implementation of puoribor, a official game environment in the AI division of 2023 KAIST-POSTECH
@@ -90,7 +90,8 @@
     <a href="https://ttl.seorii.page" target="_blank"><h3>TTL</h3></a>
     <p>This is a timetable creation website for KAIST.</p>
     <p>It automatically crawls and updates timetables from the academic system.</p>
-    <p>Approximately 2000 users (WAU) use it during the course registration week.</p>
+    <p>Approximately 2,000 users (WAU) use it during the course registration week.</p>
+    <p>It recorded up to 1,400 concurrent users (30-minute session).</p>
     <a href="https://www.ringleplus.com" target="_blank"><h3>Ringle AI Tutor</h3></a>
     <p>I developed the AI Tutor feature for Ringle.</p>
     <ul>
@@ -102,6 +103,15 @@
             <li>Optimized Python code to improve speed by about 5 times, enabling real-time voice diagnosis functionality.</li>
             <li>Worked on infrastructure aspects such as processing pipelines/k8s deployment.</li>
     </ul>
+    <h3>PLAT</h3>
+    <p>Metaverse community. It was developed by HereWe Co. (current The Dimension Company) in the early days.</p>
+    <ul>
+        <li>It is a metaverse community application based on Three.js. We developed a helper library for 3D object placement and
+            operations.
+        </li>
+        <li>I implemented video calls using WebRTC.</li>
+        <li>I implemented a horizontally scalable WS system using message queues.</li>
+        <li>I implemented a Svelte-based plugin system.</li>
 </Container>
 <Container>
     <h1>
@@ -139,6 +149,8 @@
     <ul>
         <li>ICPC 2024 Seoul Regional, 64th</li>
         <li>ICPC 2024 Seoul Regional Qualification Round, 45th</li>
+        <li>UCPC 2024 Final Round, 44th</li>
+        <li>UCPC 2024 Qualification Round, 45th</li>
         <li>UCPC 2023 Final Round, 38th</li>
         <li>UCPC 2023 Qualification Round, 40th</li>
         <li>ICPC 2022 Seoul Regional, 40th</li>
@@ -152,5 +164,7 @@
         <li>KCF 2018, Final Round, 2nd place</li>
         <li>KOI 2018, Final Round, Silver Medal</li>
         <li>KOI 2018, Qualification Round, Silver Medal</li>
+
+        <li>Incheon student SW hackathon 2020, 1st</li>
     </ul>
 </Container>
