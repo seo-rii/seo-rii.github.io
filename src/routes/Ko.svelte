@@ -41,11 +41,11 @@
         <SchoolSvg width="40" height="40" viewBox="0 0 512 512"/>
         다닌 곳
     </h1>
-    <p>인천과학예술영재학교를 나왔고, 현재 한국과학기술원 전산학부 22학번으로 재학하고 있습니다.</p>
+    <p><a href="https://iasa.icehs.kr/">인천과학예술영재학교</a>를 나왔고, 현재 <a href="https://kaist.ac.kr">한국과학기술원</a> 전산학부 22학번으로 재학하고 있습니다.</p>
     <p><a href="https://dimension.company/">The Dimension Company</a>에서 22년 12월부터 23년 8월까지 개발자로 근무했었습니다. PLAT이라는 메타버스 커뮤니티를 개발했습니다.</p>
-    <p>주식회사 링글에듀케이션에서 24년 7월부터 24년 11월까지 ML팀 인턴으로 근무했었습니다.</p>
-    <p>인공지능 동아리 VLAB에서 23년 9월부터 24년 5월까지 회장직을 맡았습니다. 현재도 일반 회원으로써 계속 활동하고 있습니다.</p>
-    <p><a href="https://casyslab.kaist.ac.kr/">CASYS Lab</a>에서 24년 12월부터 25년 3월까지 랩인턴으로 근무했습니다. Tiered Memory 시스템과 관련한 연구를 진행했습니다.</p>
+    <p><a href="https://ringleplus.com/">주식회사 링글에듀케이션</a>에서 24년 7월부터 24년 11월까지 ML팀 인턴으로 근무했었습니다.</p>
+    <p><a href="https://vlab-kaist.github.io/">인공지능 동아리 VLAB</a>에서 23년 9월부터 24년 5월까지 회장직을 맡았습니다. 현재도 일반 회원으로써 계속 활동하고 있습니다.</p>
+    <p><a href="https://casyslab.kaist.ac.kr/">CASYS Lab</a>에서 24년 12월부터 25년 2월까지 랩인턴으로 근무했습니다. Tiered Memory 시스템과 관련한 연구를 진행했습니다.</p>
 </Container>
 <Container>
     <h1>

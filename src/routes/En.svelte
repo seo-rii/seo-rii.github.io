@@ -41,10 +41,10 @@
         <SchoolSvg width="40" height="40" viewBox="0 0 512 512"/>
         Where I was
     </h1>
-    <p>I graduated from Incheon Science High School for the Gifted and am currently studying in the Department of Computer Science at KAIST, class of '22.</p>
+    <p>I graduated from <a href="https://iasa.icehs.kr/">Incheon Academy of Science and Arts</a> and am currently studying in the Department of Computer Science at <a href="https://kaist.ac.kr">KAIST</a>, class of '22.</p>
     <p>I worked as a developer at <a href="https://dimension.company/">The Dimension Company</a> from December 2022 to August 2023. I developed a metaverse community called PLAT.</p>
-    <p>I worked as an intern in the ML team at Ringle Education Co., Ltd. from July 2024 to November 2024.</p>
-    <p>I served as the president of the AI club VLAB from September 2023 to May 2024. I am still active as a regular member.</p>
+    <p>I worked as an intern in the ML team at <a href="https://ringleplus.com/">Ringle Education Co., Ltd.</a> from July 2024 to November 2024.</p>
+    <p>I served as the president of the <a href="https://vlab-kaist.github.io/">AI club VLAB</a> from September 2023 to May 2024. I am still active as a regular member.</p>
     <p>I worked on <a href="https://casyslab.kaist.ac.kr/">CASYS Lab</a> as a research intern from December 2024 to February 2025. I researched on multi-tiered memory system.</p>
 </Container>
 <Container>
