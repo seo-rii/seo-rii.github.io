@@ -46,6 +46,7 @@
     <p>I worked as an intern in the ML team at <a href="https://ringleplus.com/">Ringle Education Co., Ltd.</a> from July 2024 to November 2024.</p>
     <p>I served as the president of the <a href="https://vlab-kaist.github.io/">AI club VLAB</a> from September 2023 to May 2024. I am still active as a regular member.</p>
     <p>I worked on <a href="https://casyslab.kaist.ac.kr/">CASYS Lab</a> as a research intern from December 2024 to February 2025. I researched on multi-tiered memory system.</p>
+    <p>I will serve in the Republic of Korea Air Force from April 2025 to January 2027.</p>
 </Container>
 <Container>
     <h1>
@@ -112,6 +113,10 @@
         <li>I implemented video calls using WebRTC.</li>
         <li>I implemented a horizontally scalable WS system using message queues.</li>
         <li>I implemented a Svelte-based plugin system.</li>
+    </ul>
+    <h3>HyperCLOVA X</h3>
+    <p>I processed text data for training HyperclovaX, a large language model from Naver, into a format optimized for learning.</p>
+    <p>Over 150GB and 10 million entries of text data were handled.</p>
 </Container>
 <Container>
     <h1>

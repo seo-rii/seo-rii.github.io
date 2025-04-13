@@ -46,6 +46,7 @@
     <p><a href="https://ringleplus.com/">주식회사 링글에듀케이션</a>에서 24년 7월부터 24년 11월까지 ML팀 인턴으로 근무했었습니다.</p>
     <p><a href="https://vlab-kaist.github.io/">인공지능 동아리 VLAB</a>에서 23년 9월부터 24년 5월까지 회장직을 맡았습니다. 현재도 일반 회원으로써 계속 활동하고 있습니다.</p>
     <p><a href="https://casyslab.kaist.ac.kr/">CASYS Lab</a>에서 24년 12월부터 25년 2월까지 랩인턴으로 근무했습니다. Tiered Memory 시스템과 관련한 연구를 진행했습니다.</p>
+    <p>대한민국 공군에서 25년 4월부터 27년 1월까지 복무합니다.</p>
 </Container>
 <Container>
     <h1>
@@ -106,6 +107,9 @@
         <li>메시지 큐를 사용하여 수평 확장 가능한 WS 시스템을 구현했습니다.</li>
         <li>스벨트 기반의 플러그인 시스템을 구현했습니다.</li>
     </ul>
+    <h3>HyperCLOVA X</h3>
+    <p>네이버의 LLM인 하이퍼클로바에 사용될 텍스트 학습 데이터를 전처리했습니다.</p>
+    <p>150GB 이상, 1천만개 이상의 텍스트 파일을 처리해 제공했습니다.</p>
 </Container>
 <Container>
     <h1>
