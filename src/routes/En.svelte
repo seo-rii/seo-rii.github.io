@@ -12,7 +12,7 @@
 
 <Container full>
     <h1>Makes something in the world.</h1>
-    <h4>Seohyun Lee, KAIST 22</h4>
+    <h4>Seohyun Lee, KAIST '22</h4>
     <div class="link">
         <Grid max="3" width="300">
             <a href="//github.com/seo-rii" target="_blank">
@@ -41,11 +41,11 @@
         <SchoolSvg width="40" height="40" viewBox="0 0 512 512"/>
         Where I was
     </h1>
-    <p>I graduated from <a href="https://iasa.icehs.kr/">Incheon Academy of Science and Arts</a> and am currently studying in the Department of Computer Science at <a href="https://kaist.ac.kr">KAIST</a>, class of '22.</p>
-    <p>I worked as a developer at <a href="https://dimension.company/">The Dimension Company</a> from December 2022 to August 2023. I developed a metaverse community called PLAT.</p>
-    <p>I worked as an intern in the ML team at <a href="https://ringleplus.com/">Ringle Education Co., Ltd.</a> from July 2024 to November 2024.</p>
-    <p>I served as the president of the <a href="https://vlab-kaist.github.io/">AI club VLAB</a> from September 2023 to May 2024. I am still active as a regular member.</p>
-    <p>I worked on <a href="https://casyslab.kaist.ac.kr/">CASYS Lab</a> as a research intern from December 2024 to February 2025. I researched on multi-tiered memory system.</p>
+    <p>I graduated from <a href="https://iasa.icehs.kr/">Incheon Academy of Science and Arts</a> and am currently studying Computer Science at <a href="https://kaist.ac.kr">KAIST</a>, class of '22.</p>
+    <p>I worked as a developer at <a href="https://dimension.company/">The Dimension Company</a> from December 2022 to August 2023, building a metaverse community called PLAT.</p>
+    <p>I interned on the ML team at <a href="https://ringleplus.com/">Ringle Education Co., Ltd.</a> from July 2024 to November 2024.</p>
+    <p>I served as president of the <a href="https://vlab-kaist.github.io/">AI club VLAB</a> from September 2023 to May 2024 and remain an active member.</p>
+    <p>I worked at <a href="https://casyslab.kaist.ac.kr/">CASYS Lab</a> as a research intern from December 2024 to February 2025, researching multi-tier memory systems.</p>
     <p>I will serve in the Republic of Korea Air Force from April 2025 to January 2027.</p>
 </Container>
 <Container>
@@ -53,82 +53,76 @@
         <ToolSvg width="40" height="40" viewBox="0 0 512 512"/>
         What I made
     </h1>
-    <p>Makes various programs. They create everything from algorithmic troubleshooting code to websites.</p>
+    <p>I build all kinds of software, from algorithmic tooling to production websites.</p>
     <a href="https://jungol.co.kr" target="_blank"><h3>Jungol</h3></a>
-    <p>I renewed algorithm training website run by HancomEducation.</p>
+    <p>I rebuilt the algorithm training website run by HancomEducation.</p>
     <ul>
-        <li>I've redeveloped all services, including judger.</li>
-        <li>The frontend is a MPA using a Svelte.</li>
-        <li>Supports serverless execution of source code created based on WASM. It compiles C code on-device using wasm version of gcc/ld. It uses pyodide to run python code.</li>
-        <li>Implemented LSP functionality to support intelligence in web editors.</li>
-        <li>Backend was built using nodejs. It uses HonoJS framework.</li>
-        <li>I implemented my own api query framework like tanstack-query. It supports e2e-type-safety, and optional SSR with easy config.</li>
-        <li>I adopted the MSA structure.</li>
-        <li><a href="https://github.com/HancomAC/crunchy" target="_blank">Deployment tool</a> is also
-            self-developed. It automatically creates dev preview when deployed on Github.
-            I have automated entire system so that it can be distributed to the Production
-            server with just one click of a button.
+        <li>Redeveloped every service, including the online judge.</li>
+        <li>Frontend is an MPA built with Svelte.</li>
+        <li>Supports serverless execution of source code on WASM. C is compiled on-device with the wasm build of gcc/ld, and Python runs via Pyodide.</li>
+        <li>Added LSP-style code intelligence in the web editor.</li>
+        <li>Backend uses Node.js with the HonoJS framework.</li>
+        <li>Built my own API query framework similar to TanStack Query with end-to-end type safety and optional SSR.</li>
+        <li>Adopted a microservices architecture.</li>
+        <li><a href="https://github.com/HancomAC/crunchy" target="_blank">Deployment tool</a> is also self-developed. It automatically creates dev previews on GitHub and ships to production with one click.
         </li>
-        <li>The problem judger has been implemented by myself. Forked version named <a
+        <li>The problem judge was implemented in-house. A fork named <a
                 href="https://github.com/HancomAC/hana" target="_blank">HANA</a>
             is distributed under MIT license.
         </li>
-        <li>The service is on the Google Cloud platform, and it actively utilized features like Pubsub, Arc, and GKE,
-            not simple features like Compute Engine.
+        <li>The service runs on Google Cloud, actively using features like Pub/Sub, Arc, and GKE rather than only Compute Engine.
         </li>
         <li>I use Terraform to manage Infrastructure as Code.</li>
-        <li>I use Sentry to collect error log automatically and fix it.</li>
+        <li>I use Sentry to collect error logs automatically and fix them quickly.</li>
     </ul>
     <a href="https://codepass.co.kr" target="_blank"><h3>codepass</h3></a>
-    <p>Enterprise service version of Jungol.</p>
-    <p>Companies such as Samsung Electronics' DS division(including Overseas), Samsung Display, Semes, and Steco are using it for algorithm
+    <p>Enterprise version of Jungol.</p>
+    <p>Companies such as Samsung Electronics' DS division (including overseas), Samsung Display, Semes, and Steco use it for algorithm
         training.</p>
     <a href="//github.com/seo-rii/kaporido_v2" target="_blank"><h3>kaporido</h3></a>
-    <p>This is the GUI implementation of puoribor, a official game environment in the AI division of 2023 KAIST-POSTECH
+    <p>GUI implementation of Puoribor, the official game environment in the AI division of the 2023 KAIST-POSTECH
         student competition.</p>
-    <p>You can find <a href="//github.com/seo-rii/loq2">SDK</a> over here. It is an API for python env, and it's fast
-        since it's written in C++.</p>
+    <p>You can find the <a href="//github.com/seo-rii/loq2">SDK</a> here. It provides a Python API and is fast since it's written in C++.</p>
     <a href="https://ttl.seorii.page" target="_blank"><h3>TTL</h3></a>
-    <p>This is a timetable creation website for KAIST.</p>
+    <p>A timetable creation website for KAIST.</p>
     <p>It automatically crawls and updates timetables from the academic system.</p>
-    <p>Approximately 2,000 users (WAU) use it during the course registration week.</p>
-    <p>It recorded up to 1,400 concurrent users (30-minute session).</p>
+    <p>About 2,000 WAU during the course registration week.</p>
+    <p>Peaked at 1,400 concurrent users (30-minute window).</p>
     <a href="https://www.ringleplus.com" target="_blank"><h3>Ringle AI Tutor</h3></a>
     <p>I developed the AI Tutor feature for Ringle.</p>
     <ul>
-            <li>Used React/React Native/Ruby on Rails.</li>
-            <li>Worked with technologies related to streaming processing/audio processing.</li>
+            <li>Built with React, React Native, and Ruby on Rails.</li>
+            <li>Handled streaming and audio processing workloads.</li>
     </ul>
     <p>Improved the AI evaluation system.</p>
     <ul>
-            <li>Optimized Python code to improve speed by about 5 times, enabling real-time voice diagnosis functionality.</li>
-            <li>Worked on infrastructure aspects such as processing pipelines/k8s deployment.</li>
+            <li>Optimized Python code for about 5x speedup, enabling real-time voice diagnosis.</li>
+            <li>Worked on infrastructure such as processing pipelines and k8s deployment.</li>
     </ul>
     <h3>PLAT</h3>
-    <p>Metaverse community. It was developed by HereWe Co. (current The Dimension Company) in the early days.</p>
+    <p>Metaverse community originally developed by HereWe Co. (now The Dimension Company).</p>
     <ul>
-        <li>It is a metaverse community application based on Three.js. We developed a helper library for 3D object placement and
+        <li>Three.js-based metaverse application. We developed a helper library for 3D object placement and
             operations.
         </li>
         <li>I implemented video calls using WebRTC.</li>
-        <li>I implemented a horizontally scalable WS system using message queues.</li>
+        <li>I implemented a horizontally scalable WebSocket system using message queues.</li>
         <li>I implemented a Svelte-based plugin system.</li>
     </ul>
     <h3>HyperCLOVA X</h3>
-    <p>I processed text data for training HyperclovaX, a large language model from Naver, into a format optimized for learning.</p>
-    <p>Over 150GB and 10 million entries of text data were handled.</p>
+    <p>Prepared text data for training HyperclovaX, a large language model from Naver, in a format optimized for learning.</p>
+    <p>Processed over 150GB across 10 million text entries.</p>
 </Container>
 <Container>
     <h1>
         <GearSvg width="40" height="40" viewBox="0 0 32 32"/>
-        Opensources I made
+        Open source I made
     </h1>
-    <p>I've made some open source libraries. I also use a lot of open sources, so I'm going to share the code for
-        others.</p>
+    <p>I build and share open-source libraries while relying on many others.</p>
     <a href="https://github.com/seo-rii/electron-acrylic-window" target="_blank"><h3>electron-acrylic-window
         (deprecated)</h3></a>
     <ul>
-        <li>A module that gives acrylic effects to the background of the electron program in Windows 10/11.</li>
+        <li>A module that gives acrylic effects to the background of Electron programs in Windows 10/11.</li>
     </ul>
     <a href="https://seorii.page/tiptap" target="_blank"><h3>@seorii/tiptap</h3></a>
     <ul>
@@ -142,7 +136,7 @@
     <a href="https://seorii.page/wasm-idle" target="_blank"><h3>wasm-idle</h3></a>
     <ul>
         <li>Source code executor written based on WASM.</li>
-        <li>C++, Python code can be executed without a server.</li>
+        <li>C++ and Python code can be executed without a server.</li>
     </ul>
 </Container>
 <Container>
@@ -150,7 +144,7 @@
         <Age1Svg width="40" height="40" viewBox="0 0 1024 1024"/>
         Awards I got
     </h1>
-    <p>I like to solve algorithm problems. I've got some awards from them.</p>
+    <p>I enjoy solving algorithm problems. Here are some awards.</p>
     <ul>
         <li>ICPC 2024 Seoul Regional, 64th</li>
         <li>ICPC 2024 Seoul Regional Qualification Round, 45th</li>
