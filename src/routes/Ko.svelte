@@ -144,6 +144,8 @@
     </h1>
     <p>알고리즘 문제 해결을 좋아합니다. 몇 가지 상도 받았습니다.</p>
     <ul>
+        <li>NASA Space Apps Challenge 2025, Global Finalist</li>
+        <li>KAIST-Upstage LLM Project Hackathon, 1st</li>
         <li>ICPC 2024 Seoul Regional, 64th</li>
         <li>ICPC 2024 Seoul Regional Qualification Round, 45th</li>
         <li>UCPC 2024 Final Round, 44th</li>

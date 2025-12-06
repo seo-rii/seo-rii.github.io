@@ -61,9 +61,11 @@
         <li>Frontend is an MPA built with Svelte.</li>
         <li>Supports serverless execution of source code on WASM. C is compiled on-device with the wasm build of gcc/ld, and Python runs via Pyodide.</li>
         <li>Added LSP-style code intelligence in the web editor.</li>
-        <li>Backend uses Node.js with the HonoJS framework.</li>
+        <li>Backend uses Node.js/TypeScript with the HonoJS framework, wrapped with my own <a
+                href="https://github.com/HancomAC/bedrock" target="_blank">framework</a> to simplify MSA builds.</li>
         <li>Built my own API query framework similar to TanStack Query with end-to-end type safety and optional SSR.</li>
         <li>Adopted a microservices architecture.</li>
+        <li>Uses message queues to offload heavy tasks asynchronously.</li>
         <li><a href="https://github.com/HancomAC/crunchy" target="_blank">Deployment tool</a> is also self-developed. It automatically creates dev previews on GitHub and ships to production with one click.
         </li>
         <li>The problem judge was implemented in-house. A fork named <a
@@ -146,6 +148,8 @@
     </h1>
     <p>I enjoy solving algorithm problems. Here are some awards.</p>
     <ul>
+        <li>NASA Space Apps Challenge 2025, Global Finalist</li>
+        <li>KAIST-Upstage LLM Project Hackathon, 1st</li>
         <li>ICPC 2024 Seoul Regional, 64th</li>
         <li>ICPC 2024 Seoul Regional Qualification Round, 45th</li>
         <li>UCPC 2024 Final Round, 44th</li>
