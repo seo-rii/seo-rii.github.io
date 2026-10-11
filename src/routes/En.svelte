@@ -148,6 +148,8 @@
     </h1>
     <p>I enjoy solving algorithm problems. Here are some awards.</p>
     <ul>
+        <li>Republic of Korea Air Force Startup Competition, Creativity Award</li>
+        <li>Cryptanalysis Competition, 777th Command Commander's Award</li>
         <li>NASA Space Apps Challenge 2025, Global Finalist</li>
         <li>KAIST-Upstage LLM Project Hackathon, 1st</li>
         <li>ICPC 2024 Seoul Regional, 64th</li>
