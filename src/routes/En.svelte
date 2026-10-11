@@ -11,14 +11,14 @@
 </script>
 
 <Container full>
-    <h1>Makes something in the world.</h1>
+    <h1>I make things in this world.</h1>
     <h4>Seohyun Lee, KAIST '22</h4>
     <div class="link">
         <Grid max="3" width="300">
             <a href="//github.com/seo-rii" target="_blank">
                 <Region>
                     <img src="github.png" alt="github" height="50">
-                    <p>Github <span>@seo-rii</span></p>
+                    <p>GitHub <span>@seo-rii</span></p>
                 </Region>
             </a>
             <a href="//log.seorii.page" target="_blank">
@@ -39,9 +39,9 @@
 <Container>
     <h1>
         <SchoolSvg width="40" height="40" viewBox="0 0 512 512"/>
-        Where I was
+        Where I've been
     </h1>
-    <p>I graduated from <a href="https://iasa.icehs.kr/">Incheon Academy of Science and Arts</a> and am currently studying Computer Science at <a href="https://kaist.ac.kr">KAIST</a>, class of '22.</p>
+    <p>I graduated from <a href="https://iasa.icehs.kr/">Incheon Academy of Science and Arts</a> and am currently studying Computer Science at <a href="https://kaist.ac.kr">KAIST</a>, which I entered in 2022.</p>
     <p>I worked as a developer at <a href="https://dimension.company/">The Dimension Company</a> from December 2022 to August 2023, building a metaverse community called PLAT.</p>
     <p>I interned on the ML team at <a href="https://ringleplus.com/">Ringle Education Co., Ltd.</a> from July 2024 to November 2024.</p>
     <p>I served as president of the <a href="https://vlab-kaist.github.io/">AI club VLAB</a> from September 2023 to May 2024 and remain an active member.</p>
@@ -51,26 +51,26 @@
 <Container>
     <h1>
         <ToolSvg width="40" height="40" viewBox="0 0 512 512"/>
-        What I made
+        What I've built
     </h1>
     <p>I build all kinds of software, from algorithmic tooling to production websites.</p>
     <a href="https://jungol.co.kr" target="_blank"><h3>Jungol</h3></a>
     <p>I rebuilt the algorithm training website run by HancomEducation.</p>
     <ul>
         <li>Redeveloped every service, including the online judge.</li>
-        <li>Frontend is an MPA built with Svelte.</li>
-        <li>Supports serverless execution of source code on WASM. C is compiled on-device with the wasm build of gcc/ld, and Python runs via Pyodide.</li>
+        <li>The frontend is an MPA built with Svelte.</li>
+        <li>Supports serverless execution of source code on WebAssembly. C is compiled on-device with WebAssembly builds of GCC and ld, and Python runs via Pyodide.</li>
         <li>Added LSP-style code intelligence in the web editor.</li>
-        <li>Backend uses Node.js/TypeScript with the HonoJS framework, wrapped with my own <a
+        <li>The backend uses Node.js/TypeScript with the Hono framework, wrapped with my own <a
                 href="https://github.com/HancomAC/bedrock" target="_blank">framework</a> to simplify MSA builds.</li>
         <li>Built my own API query framework similar to TanStack Query with end-to-end type safety and optional SSR.</li>
         <li>Adopted a microservices architecture.</li>
         <li>Uses message queues to offload heavy tasks asynchronously.</li>
-        <li><a href="https://github.com/HancomAC/crunchy" target="_blank">Deployment tool</a> is also self-developed. It automatically creates dev previews on GitHub and ships to production with one click.
+        <li>I also developed the <a href="https://github.com/HancomAC/crunchy" target="_blank">deployment tool</a>. It automatically deploys to a beta server when code is pushed to GitHub and ships to production with one click.
         </li>
         <li>The problem judge was implemented in-house. A fork named <a
                 href="https://github.com/HancomAC/hana" target="_blank">HANA</a>
-            is distributed under MIT license.
+            is distributed under the MIT license.
         </li>
         <li>The service runs on Google Cloud, actively using features like Pub/Sub, Arc, and GKE rather than only Compute Engine.
         </li>
@@ -79,7 +79,7 @@
     </ul>
     <a href="https://codepass.co.kr" target="_blank"><h3>codepass</h3></a>
     <p>Enterprise version of Jungol.</p>
-    <p>Companies such as Samsung Electronics' DS division (including overseas), Samsung Display, Semes, and Steco use it for algorithm
+    <p>Companies such as Samsung Electronics' DS division (including overseas), Samsung Display, SEMES, and STECO use it for algorithm
         training.</p>
     <a href="//github.com/seo-rii/kaporido_v2" target="_blank"><h3>kaporido</h3></a>
     <p>GUI implementation of Puoribor, the official game environment in the AI division of the 2023 KAIST-POSTECH
@@ -88,7 +88,7 @@
     <a href="https://ttl.seorii.page" target="_blank"><h3>TTL</h3></a>
     <p>A timetable creation website for KAIST.</p>
     <p>It automatically crawls and updates timetables from the academic system.</p>
-    <p>About 2,000 WAU during the course registration week.</p>
+    <p>About 2,000 weekly active users (WAU) during course registration week.</p>
     <p>Peaked at 1,400 concurrent users (30-minute window).</p>
     <a href="https://www.ringleplus.com" target="_blank"><h3>Ringle AI Tutor</h3></a>
     <p>I developed the AI Tutor feature for Ringle.</p>
@@ -98,7 +98,7 @@
     </ul>
     <p>Improved the AI evaluation system.</p>
     <ul>
-            <li>Optimized Python code for about 5x speedup, enabling real-time voice diagnosis.</li>
+            <li>Optimized Python code to run about five times faster, enabling real-time speech assessment.</li>
             <li>Worked on infrastructure such as processing pipelines and k8s deployment.</li>
     </ul>
     <h3>PLAT</h3>
@@ -112,23 +112,23 @@
         <li>I implemented a Svelte-based plugin system.</li>
     </ul>
     <h3>HyperCLOVA X</h3>
-    <p>Prepared text data for training HyperclovaX, a large language model from Naver, in a format optimized for learning.</p>
-    <p>Processed over 150GB across 10 million text entries.</p>
+    <p>Prepared text data for training HyperCLOVA X, a large language model from NAVER, in a format optimized for learning.</p>
+    <p>Processed and provided at least 150 GB of data across at least 10 million text files.</p>
 </Container>
 <Container>
     <h1>
         <GearSvg width="40" height="40" viewBox="0 0 32 32"/>
-        Open source I made
+        Open source
     </h1>
     <p>I build and share open-source libraries while relying on many others.</p>
     <a href="https://github.com/seo-rii/electron-acrylic-window" target="_blank"><h3>electron-acrylic-window
         (deprecated)</h3></a>
     <ul>
-        <li>A module that gives acrylic effects to the background of Electron programs in Windows 10/11.</li>
+        <li>A module that gives acrylic effects to the background of Electron programs on Windows 10/11.</li>
     </ul>
     <a href="https://seorii.page/tiptap" target="_blank"><h3>@seorii/tiptap</h3></a>
     <ul>
-        <li>WYSIWYG editor with multiple modules added based on tiptap.</li>
+        <li>A WYSIWYG editor built on Tiptap with additional modules.</li>
     </ul>
     <a href="https://seorii.page/nunui" target="_blank"><h3>nunui</h3></a>
     <ul>
@@ -137,16 +137,16 @@
     </ul>
     <a href="https://seorii.page/wasm-idle" target="_blank"><h3>wasm-idle</h3></a>
     <ul>
-        <li>Source code executor written based on WASM.</li>
+        <li>A WebAssembly-based source code runner.</li>
         <li>C++ and Python code can be executed without a server.</li>
     </ul>
 </Container>
 <Container>
     <h1>
         <Age1Svg width="40" height="40" viewBox="0 0 1024 1024"/>
-        Awards I got
+        Awards
     </h1>
-    <p>I enjoy solving algorithm problems. Here are some awards.</p>
+    <p>I enjoy solving algorithmic problems. Here are some awards.</p>
     <ul>
         <li>Republic of Korea Air Force Startup Competition, Creativity Award</li>
         <li>Cryptanalysis Competition, 777th Command Commander's Award</li>
@@ -170,6 +170,6 @@
         <li>KOI 2018, Final Round, Silver Medal</li>
         <li>KOI 2018, Qualification Round, Silver Medal</li>
 
-        <li>Incheon student SW hackathon 2020, 1st</li>
+        <li>Incheon Student SW Hackathon 2020, 1st</li>
     </ul>
 </Container>
