@@ -46,7 +46,7 @@
     <p>I interned on the ML team at <a href="https://ringleplus.com/">Ringle Education Co., Ltd.</a> from July 2024 to November 2024.</p>
     <p>I served as president of the <a href="https://vlab-kaist.github.io/">AI club VLAB</a> from September 2023 to May 2024 and remain an active member.</p>
     <p>I worked at <a href="https://casyslab.kaist.ac.kr/">CASYS Lab</a> as a research intern from December 2024 to February 2025, researching multi-tier memory systems.</p>
-    <p>I will serve in the Republic of Korea Air Force from April 2025 to January 2027.</p>
+    <p>I am serving in the AI Systems Development Unit of the Republic of Korea Air Force's Intelligent Information Systems Management Group (April 2025–January 2027).</p>
 </Container>
 <Container>
     <h1>

@@ -46,7 +46,7 @@
     <p><a href="https://ringleplus.com/">주식회사 링글에듀케이션</a>에서 24년 7월부터 24년 11월까지 ML팀 인턴으로 근무했었습니다.</p>
     <p><a href="https://vlab-kaist.github.io/">인공지능 동아리 VLAB</a>에서 23년 9월부터 24년 5월까지 회장직을 맡았습니다. 현재도 일반 회원으로써 계속 활동하고 있습니다.</p>
     <p><a href="https://casyslab.kaist.ac.kr/">CASYS Lab</a>에서 24년 12월부터 25년 2월까지 랩인턴으로 근무했습니다. Tiered Memory 시스템과 관련한 연구를 진행했습니다.</p>
-    <p>대한민국 공군에서 25년 4월부터 27년 1월까지 복무합니다.</p>
+    <p>대한민국 공군 지능정보체계관리단 AI체계개발대에서 25년 4월부터 27년 1월까지 복무합니다.</p>
 </Container>
 <Container>
     <h1>
