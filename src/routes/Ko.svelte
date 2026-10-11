@@ -100,7 +100,7 @@
         <li>처리 파이프라인/k8s 배포와 같은 인프라 부분도 작업했습니다.</li>
     </ul>
     <h3>PLAT</h3>
-    <p>메타버스 커뮤니티입니다. 여기우리(현 The Dimension Company)에서 초기에 개발했던 제품입니다.</p>
+    <p>메타버스 커뮤니티입니다. 여기우리(현 <a href="https://dimension.company/">The Dimension Company</a>)에서 초기에 개발했던 제품입니다.</p>
     <ul>
         <li>Three.js 기반의 메타버스 커뮤니티입니다. 3차원 객체 배치 및 연산을 위한 헬퍼 라이브러리를 자체 개발했습니다.</li>
         <li>WebRTC를 사용하여 화상 통화를 구현했습니다.</li>

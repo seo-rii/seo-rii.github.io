@@ -102,7 +102,7 @@
             <li>Worked on infrastructure such as processing pipelines and k8s deployment.</li>
     </ul>
     <h3>PLAT</h3>
-    <p>Metaverse community originally developed by HereWe Co. (now The Dimension Company).</p>
+    <p>Metaverse community originally developed by HereWe Co. (now <a href="https://dimension.company/">The Dimension Company</a>).</p>
     <ul>
         <li>Three.js-based metaverse application. We developed a helper library for 3D object placement and
             operations.
