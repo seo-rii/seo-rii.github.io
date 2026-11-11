@@ -1,0 +1,67 @@
+:root {
+	font-family:
+		'Inter',
+		'Pretendard',
+		-apple-system,
+		BlinkMacSystemFont,
+		'Segoe UI',
+		'Noto Sans KR',
+		sans-serif;
+	color: #253747;
+	background: #fff;
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	--ink: #253747;
+	--muted: #5d6f7d;
+	--accent: #406b88;
+	--line: rgba(35, 52, 68, 0.16);
+}
+
+* {
+	box-sizing: border-box;
+}
+html {
+	scroll-behavior: smooth;
+	scroll-padding-top: 100px;
+}
+body {
+	margin: 0;
+	min-width: 320px;
+}
+button,
+a {
+	-webkit-tap-highlight-color: transparent;
+}
+button {
+	font: inherit;
+	color: inherit;
+}
+a {
+	color: inherit;
+	text-underline-offset: 0.25em;
+}
+button,
+a {
+	touch-action: manipulation;
+}
+button:focus-visible,
+a:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 5px;
+}
+::selection {
+	background: #dce8f0;
+	color: #253747;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+	*,
+	*::before,
+	*::after {
+		transition: none !important;
+	}
+}

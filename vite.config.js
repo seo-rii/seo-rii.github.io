@@ -1,10 +1,13 @@
-import {sveltekit} from '@sveltejs/kit/vite';
-import path from "path";
-import svg from "@poppanator/sveltekit-svg";
+import adapter from '@sveltejs/adapter-static';
+import { sveltekit } from '@sveltejs/kit/vite';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import { defineConfig } from 'vite';
 
-/** @type {import('vite').UserConfig} */
-const config = {
-    plugins: [sveltekit(), svg()],
-};
-
-export default config;
+export default defineConfig({
+	plugins: [
+		sveltekit({
+			adapter: adapter(),
+			preprocess: vitePreprocess()
+		})
+	]
+});

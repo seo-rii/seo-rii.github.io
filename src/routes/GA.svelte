@@ -1,24 +1,24 @@
 <script lang="ts">
-    import {page} from '$app/stores'
-    import {browser} from "$app/environment";
+	import { onMount } from 'svelte';
 
-    const page_title = 'seorii';
-    const __GA = 'G-CWBZZZGQ92';
+	onMount(() => {
+		// Local development and the offline review must not generate page views.
+		if (!['seorii.page', 'seo-rii.github.io'].includes(window.location.hostname)) return;
 
-    declare const gtag;
-    if (browser) window._GA_ = __GA;
-    let path = '';
+		const measurementId = 'G-CWBZZZGQ92';
+		const analyticsWindow = window as Window & { dataLayer?: unknown[] };
+		const dataLayer = (analyticsWindow.dataLayer ??= []);
+		function gtag(..._args: unknown[]) {
+			// gtag's queue uses Arguments objects, as in Google's standard snippet.
+			dataLayer.push(arguments);
+		}
+		gtag('js', new Date());
+		gtag('config', measurementId, { page_title: 'seorii' });
 
-    $: if (browser && typeof gtag !== 'undefined' && path !== $page.url.pathname) {
-        path = $page.url.pathname;
-        gtag('config', __GA, {
-            page_title,
-            page_path: $page.url.pathname,
-        })
-    }
+		const script = document.createElement('script');
+		script.async = true;
+		script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+		document.head.append(script);
+		return () => script.remove();
+	});
 </script>
-
-<svelte:head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id={__GA}"></script>
-    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js', new Date());gtag('config',window._GA_);function gads(){setTimeout(()=>{try{(window.adsbygoogle||[]).push({})}catch(e){}},500)}</script>
-</svelte:head>
