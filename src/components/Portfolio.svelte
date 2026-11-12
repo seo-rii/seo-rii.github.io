@@ -4,11 +4,13 @@
 	import En from '../routes/En.svelte';
 	import SnowBackground from './SnowBackground.svelte';
 	import symbol from '../assets/seorii.png';
+	import type { ColorScheme } from '../lib/color-scheme';
 
 	type Language = 'ko' | 'en';
 	let language = $state<Language>('ko');
 	let snowPaused = $state(false);
 	let reducedMotion = $state(false);
+	let colorScheme = $state<ColorScheme | null>(null);
 	const copy = {
 		ko: {
 			name: '이서현',
@@ -91,8 +93,14 @@
 <svelte:head>
 	<title>{language === 'ko' ? '이서현' : 'Seohyun Lee'} · seorii</title>
 	<meta name="description" content={text.description} />
-	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-	<meta name="theme-color" content="#101923" media="(prefers-color-scheme: dark)" />
+	<meta
+		name="theme-color"
+		content={colorScheme === 'dark' ? '#101923' : '#ffffff'}
+		media={colorScheme === null ? '(prefers-color-scheme: light)' : undefined}
+	/>
+	{#if colorScheme === null}
+		<meta name="theme-color" content="#101923" media="(prefers-color-scheme: dark)" />
+	{/if}
 	<meta property="og:title" content="Seohyun Lee · seorii" />
 	<meta property="og:description" content={text.description} />
 	<meta property="og:type" content="website" />
@@ -100,7 +108,7 @@
 	<link rel="canonical" href="https://seorii.page/" />
 </svelte:head>
 
-<SnowBackground paused={snowPaused} />
+<SnowBackground paused={snowPaused} onColorSchemeChange={(next) => (colorScheme = next)} />
 
 <div id="top" class="site-shell" lang={language}>
 	<a class="skip-link" href="#about">{text.skip}</a>

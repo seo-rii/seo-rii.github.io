@@ -3,8 +3,12 @@
 	import { mountInkSnow } from '../../vendor/ink-snow/engine.js';
 	import type { InkSnowAPI, InkSnowSettings } from '../../vendor/ink-snow/engine.js';
 	import preset from '../lib/snow-settings.json';
+	import { observeColorScheme, type ColorScheme } from '../lib/color-scheme';
 
-	let { paused = false }: { paused?: boolean } = $props();
+	let {
+		paused = false,
+		onColorSchemeChange
+	}: { paused?: boolean; onColorSchemeChange?: (scheme: ColorScheme) => void } = $props();
 	let host: HTMLDivElement;
 	let api = $state.raw<InkSnowAPI | null>(null);
 	let reducedMotion = $state(false);
@@ -26,13 +30,13 @@
 		let atTop = window.scrollY <= 0;
 		let motionTimer = 0;
 		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-		const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
+		let colorScheme: ColorScheme = 'light';
 
 		function themeSettings(): Pick<
 			InkSnowSettings,
 			'theme' | 'snowColor' | 'backgroundColor' | 'washColor'
 		> {
-			return colorScheme.matches
+			return colorScheme === 'dark'
 				? {
 						theme: 'dark',
 						snowColor: '#e5eff8',
@@ -46,6 +50,11 @@
 						washColor: settings.washColor
 					};
 		}
+		const stopColorScheme = observeColorScheme((next) => {
+			colorScheme = next;
+			onColorSchemeChange?.(next);
+			api?.update(themeSettings());
+		});
 
 		reducedMotion = reduced.matches;
 		snowAmount = atTop ? settings.snowAmount : readingSnowAmount;
@@ -65,7 +74,7 @@
 			controls: false,
 			scrollContainer: window
 		});
-		if (!instance) return;
+		if (!instance) return stopColorScheme;
 		api = instance;
 		ready = true;
 
@@ -75,9 +84,6 @@
 			atTop = nextAtTop;
 			snowAmount = atTop ? settings.snowAmount : readingSnowAmount;
 			instance.update({ snowAmount });
-		}
-		function updateColorScheme() {
-			instance.update(themeSettings());
 		}
 		function updateMotionPreference() {
 			reducedMotion = reduced.matches;
@@ -111,7 +117,6 @@
 		window.addEventListener('pointermove', forwardPointer, { passive: true });
 		window.addEventListener('pointerout', leavePointer, { passive: true });
 		reduced.addEventListener('change', updateMotionPreference);
-		colorScheme.addEventListener('change', updateColorScheme);
 
 		return () => {
 			window.clearTimeout(motionTimer);
@@ -120,7 +125,7 @@
 			window.removeEventListener('pointermove', forwardPointer);
 			window.removeEventListener('pointerout', leavePointer);
 			reduced.removeEventListener('change', updateMotionPreference);
-			colorScheme.removeEventListener('change', updateColorScheme);
+			stopColorScheme();
 			instance.destroy();
 			api = null;
 		};
