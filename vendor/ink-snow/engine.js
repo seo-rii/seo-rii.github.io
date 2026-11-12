@@ -2561,19 +2561,17 @@ function compactSpriteBasis(p,motion){
     getControl('scrollBlur').disabled=!settings.scrollWind;
   }
   listen(scrollWindControl,'change',()=>{
-    settings.scrollWind=scrollWindControl.checked;resetScrollMotion();syncScrollMode();
+    guardedUpdate({scrollWind:scrollWindControl.checked});
     status.textContent=settings.scrollWind?'페이지 스크롤 연동을 켰습니다.':'페이지 스크롤 연동을 껐습니다.';
-    notify();
   });
   listen(scrollModeControl,'change',()=>{
     const mode=scrollModeControl.value;
-    settings.scrollMode=mode==='speedBoth'?'speed':mode;
-    if(mode==='speed'||mode==='speedBoth')settings.scrollBothDirections=mode==='speedBoth';
-    resetScrollMotion();syncScrollMode();
+    const patch={scrollMode:mode==='speedBoth'?'speed':mode};
+    if(mode==='speed'||mode==='speedBoth')patch.scrollBothDirections=mode==='speedBoth';
+    guardedUpdate(patch);
     status.textContent=mode==='camera'?'아래로 스크롤하면 눈은 위로 움직입니다.':
       mode==='cameraSame'?'아래로 스크롤하면 눈도 아래로 움직입니다.':
       mode==='speedBoth'?'위·아래 스크롤 모두 낙하가 빨라집니다.':'원래 방식: 아래로 스크롤하면 가속, 위로 스크롤하면 감속합니다.';
-    notify();
   });
   listen(scrollBothControl,'change',()=>{
     settings.scrollBothDirections=scrollBothControl.checked;syncScrollMode();

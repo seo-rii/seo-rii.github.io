@@ -357,6 +357,59 @@ test('fixed aspect falls back to capture and restores buffered sizing when switc
 		expect(result.restored.geometry[key]).toBe(result.initial[key]);
 });
 
+test('studio scroll controls refresh buffer bounds and the presentation fallback', async ({
+	page
+}) => {
+	await mountScene(page);
+	const states = await page.evaluate(() => {
+		const scene = (window as HarnessWindow).bufferedScene;
+		scene.api.setControls(true);
+		scene.frame();
+		const host = document.getElementById('snow')!;
+		const wind = host.querySelector<HTMLInputElement>('[data-control="scrollWind"]')!;
+		const mode = host.querySelector<HTMLSelectElement>('[data-control="scrollMode"]')!;
+		const samples: { linked: boolean; mode: string; buffered: boolean; position: string }[] = [];
+		function sample() {
+			const settings = scene.api.getSettings();
+			samples.push({
+				linked: settings.scrollWind,
+				mode: settings.scrollMode,
+				buffered: scene.presentation().padding > 0,
+				position: document.getElementById('holder')!.style.position
+			});
+		}
+		for (const linked of [false, true]) {
+			wind.checked = linked;
+			wind.dispatchEvent(new Event('change', { bubbles: true }));
+			sample();
+		}
+		for (const selected of ['speed', 'camera', 'speedBoth', 'cameraSame']) {
+			mode.value = selected;
+			mode.dispatchEvent(new Event('change', { bubbles: true }));
+			sample();
+		}
+		return samples;
+	});
+	expect(states.map((state) => state.linked)).toEqual([false, true, true, true, true, true]);
+	expect(states.map((state) => state.mode)).toEqual([
+		'camera',
+		'camera',
+		'speed',
+		'camera',
+		'speed',
+		'cameraSame'
+	]);
+	expect(states.map((state) => state.buffered)).toEqual([false, true, false, true, false, true]);
+	expect(states.map((state) => state.position)).toEqual([
+		'fixed',
+		'sticky',
+		'fixed',
+		'sticky',
+		'fixed',
+		'sticky'
+	]);
+});
+
 test('buffer exhaustion and large reverse jumps retain coverage and recapture at the current viewport', async ({
 	page
 }) => {
