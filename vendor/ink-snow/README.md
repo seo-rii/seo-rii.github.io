@@ -10,7 +10,7 @@ in `src/lib/snow-settings.json`. The site overrides `scrollMode` from
 `cameraSame` to `camera` to reverse scroll motion and applies the package's
 dark palette when the system uses a dark color scheme. The palette updates in
 place when the preference changes. Only `snowAmount` changes with scrolling:
-100% at the top of the document and 16% below it. The engine
+100% at the top of the document and 25% below it. The engine
 fades individual particles, so this reduces their count without resetting the
 scene.
 

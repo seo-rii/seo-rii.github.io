@@ -24,12 +24,12 @@ async function expectSnowReady(page: Page) {
 	await expect(page.locator('.snow-host canvas')).toBeVisible();
 }
 
-async function expectSnowAmount(page: Page, amount: '1' | '0.16') {
+async function expectSnowAmount(page: Page, amount: '1' | '0.25') {
 	await expect(page.locator('.snow-background')).toHaveAttribute('data-snow-amount', amount);
 	// The engine's text output reflects its setting exactly. Its range input has
 	// step=10, so the hidden range input can round an intermediate percentage.
 	await expect(page.locator('.snow-host [data-control="snowAmount-value"]')).toHaveText(
-		amount === '1' ? '100%' : '16%'
+		amount === '1' ? '100%' : '25%'
 	);
 }
 
@@ -177,11 +177,11 @@ test('leaving the top reduces snow, the hero symbol scrolls away, and section an
 	await expect(page.getByRole('img', { name: 'seorii 눈송이 심볼' })).toBeInViewport();
 
 	await page.evaluate(() => window.scrollTo({ top: 1, behavior: 'instant' }));
-	await expectSnowAmount(page, '0.16');
+	await expectSnowAmount(page, '0.25');
 	await page.evaluate(() =>
 		window.scrollTo({ top: window.innerHeight + 100, behavior: 'instant' })
 	);
-	await expectSnowAmount(page, '0.16');
+	await expectSnowAmount(page, '0.25');
 	await expect(page.locator('.hero-symbol img')).not.toBeInViewport();
 	await expect(page.locator('.snow-background')).toHaveCSS('position', 'fixed');
 
@@ -191,7 +191,7 @@ test('leaving the top reduces snow, the hero symbol scrolls away, and section an
 	await page.getByRole('link', { name: /만든 것 둘러보기/ }).click();
 	await expect(page).toHaveURL(/#projects$/);
 	await expect(page.locator('#projects h2')).toBeInViewport();
-	await expectSnowAmount(page, '0.16');
+	await expectSnowAmount(page, '0.25');
 	for (const id of ['about', 'projects', 'opensource', 'awards']) {
 		await expect(page.locator(`section#${id}`)).toHaveCount(1);
 	}
@@ -270,7 +270,7 @@ for (const width of [320, 390]) {
 			}
 			await page.locator('#projects h2').scrollIntoViewIfNeeded();
 			await expectNoHorizontalOverflow(page);
-			await expectSnowAmount(page, '0.16');
+			await expectSnowAmount(page, '0.25');
 		}
 	});
 }
@@ -407,11 +407,11 @@ test.describe('system color scheme', () => {
 				return { width: surface.width, height: surface.height };
 			});
 			await page.evaluate(() => window.scrollTo({ top: 1, behavior: 'instant' }));
-			await expectSnowAmount(page, '0.16');
+			await expectSnowAmount(page, '0.25');
 
 			await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
 			await expectColorScheme(page, 'light');
-			await expectSnowAmount(page, '0.16');
+			await expectSnowAmount(page, '0.25');
 			await expect(page.locator('.snow-host')).toHaveAttribute('data-running', 'false');
 			await expectSnowFrozen(page);
 
@@ -421,7 +421,7 @@ test.describe('system color scheme', () => {
 			await expect(page.locator('.snow-toggle')).toHaveAttribute('aria-pressed', 'true');
 			await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'no-preference' });
 			await expectColorScheme(page, 'dark');
-			await expectSnowAmount(page, '0.16');
+			await expectSnowAmount(page, '0.25');
 			await expect(page.locator('.snow-host')).toHaveAttribute('data-running', 'false');
 			await expectSnowFrozen(page);
 			await expect(canvas).toHaveAttribute('data-theme-sentinel', 'preserved');
@@ -475,7 +475,7 @@ test('standalone HTML works from file:// offline without external scripts, fonts
 	await page.getByRole('button', { name: /Resume snow/ }).click();
 	await expect(page.locator('.snow-host')).toHaveAttribute('data-running', 'true');
 	await page.evaluate(() => window.scrollTo({ top: 1, behavior: 'instant' }));
-	await expectSnowAmount(page, '0.16');
+	await expectSnowAmount(page, '0.25');
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
 	await expectSnowAmount(page, '1');
 	await page.getByRole('button', { name: '한국어', exact: true }).click();

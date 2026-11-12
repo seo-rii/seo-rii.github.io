@@ -22,7 +22,7 @@
 		// Keep the supplied preset intact; the engine changes particle count with
 		// its own fade instead of restarting the animation or fading the canvas.
 		const settings = preset.settings as InkSnowSettings;
-		const readingSnowAmount = settings.snowAmount * 0.16;
+		const readingSnowAmount = settings.snowAmount * 0.25;
 		let atTop = window.scrollY <= 0;
 		let motionTimer = 0;
 		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');

@@ -48,7 +48,7 @@ request links to the downloadable artifact in this directory.
 - The site overrides `scrollMode` to `camera`, reversing the supplied preset's
   `cameraSame` direction: scrolling down moves the snow and clouds upward.
 - The top of the document uses the original `snowAmount: 1`. Any scroll below
-  the top reduces it to `0.16`; returning to the top restores it to `1`. The
+  the top reduces it to `0.25`; returning to the top restores it to `1`. The
   renderer transitions particle count without restarting the scene.
 - The page and snow scene follow the system's light or dark color scheme,
   including changes while the page is open. Theme changes keep the existing
