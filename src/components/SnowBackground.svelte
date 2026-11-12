@@ -6,6 +6,8 @@
 
 	let { paused = false }: { paused?: boolean } = $props();
 	let host: HTMLDivElement;
+	let surface: HTMLDivElement;
+	let anchor: HTMLDivElement;
 	let api = $state.raw<InkSnowAPI | null>(null);
 	let reducedMotion = $state(false);
 	let snowAmount = $state(preset.settings.snowAmount);
@@ -59,8 +61,16 @@
 				scrollBlur: 0,
 				snowAmount
 			},
-			// Let document scrolling stay smooth while the backdrop follows its 12fps preset.
-			scrollFrameRate: 'capture',
+			// Scroll the cached overscan with the document. Only new animation
+			// captures rebuild the picture and recenter its reusable margin.
+			scrollFrameRate: 'buffered',
+			onPresent({ scrollTop, padding, paused: held }) {
+				const fixed = held || padding === 0;
+				anchor.style.height = fixed ? '0px' : `${Math.max(0, scrollTop)}px`;
+				surface.style.position = fixed ? 'fixed' : 'sticky';
+				surface.style.top = fixed ? '0px' : `${-padding}px`;
+				surface.style.bottom = fixed ? 'auto' : `${-padding}px`;
+			},
 			paused: paused || reduced.matches,
 			controls: false,
 			scrollContainer: window
@@ -135,22 +145,36 @@
 	data-snow-amount={snowAmount}
 	data-paused={paused || reducedMotion}
 >
-	<div class="snow-surface">
-		<div class="snow-host" bind:this={host}></div>
+	<div class="snow-anchor" bind:this={anchor}></div>
+	<div class="snow-surface" bind:this={surface}>
+		<div class="snow-viewport">
+			<div class="snow-host" bind:this={host}></div>
+		</div>
 	</div>
 </div>
 
 <style>
 	.snow-background {
-		position: fixed;
+		position: absolute;
 		inset: 0;
-		z-index: 0;
+		z-index: -1;
 		pointer-events: none;
-		overflow: hidden;
+		/* Clipping must not create a scroll container around the sticky cache. */
+		overflow: clip;
 		background: var(--background, #ffffff);
 	}
 
 	.snow-surface {
+		position: sticky;
+		top: 0;
+		width: 100%;
+		will-change: transform;
+		/* Sticky travel uses the visible height, even when the address bar opens. */
+		height: 100vh;
+		height: 100dvh;
+	}
+
+	.snow-viewport {
 		width: 100%;
 		/* Keep the drawing surface stable while browser chrome changes the clip. */
 		height: 100vh;
@@ -164,5 +188,6 @@
 
 	.snow-host :global(.snow-stage) {
 		border-radius: 0;
+		overflow: visible;
 	}
 </style>

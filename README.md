@@ -47,10 +47,15 @@ request links to the downloadable artifact in this directory.
 - `src/lib/snow-settings.json` preserves the supplied settings values.
 - The site overrides `scrollMode` to `camera`, reversing the supplied preset's
   `cameraSame` direction: scrolling down moves the snow and clouds upward.
-- Scroll redraws follow the preset's 12fps cadence instead of rendering the
-  entire backdrop at the display refresh rate. `scrollBlur: 0` removes the
-  expensive speed-dependent exposure while preserving the preset's normal
-  falling-snow blur, camera motion, and cloud movement.
+- The renderer paints a 128-logical-pixel margin above and below the viewport.
+  A clipped sticky surface scrolls that cached image with the document between
+  the preset's 12fps captures. It recenters the reusable margin when the next
+  picture is presented; exhausting the margin holds its edge until that capture.
+  Scrolling therefore responds without a full redraw or a JavaScript animation
+  frame. Buffered scroll moves the whole picture at the document's 1:1 rate;
+  individual snow depths and clouds keep their ordinary animated motion.
+  `scrollBlur: 0` avoids expensive speed-dependent exposure while preserving
+  the preset's normal falling-snow blur.
 - The top of the document uses the original `snowAmount: 1`. Any scroll below
   the top reduces it to `0.25`; returning to the top restores it to `1`. The
   renderer transitions particle count without restarting the scene.
@@ -63,9 +68,11 @@ request links to the downloadable artifact in this directory.
   canvas, scroll density, and pause state.
 - The translucent reading surface keeps the snow visible behind the content.
 - The snow stage uses the large viewport height (`100lvh`, with a `100vh`
-  fallback) inside a clipped fixed viewport. Mobile browser toolbars can change
-  the visible area without resizing the canvas; window and orientation changes
-  still update the scene dimensions.
+  fallback) inside the page's clipped background. The logical viewport stays
+  separate from the drawing margin. Mobile browser toolbars can change the
+  visible area without resizing the canvas; window and orientation changes
+  still update the scene dimensions. Paused snow uses a fixed surface so both
+  animation and scroll movement stop.
 - The mobile introduction follows its content height, keeping the profile
   links close to the introduction instead of leaving a large empty gap.
 - The original snowflake symbol is a static image within the first screen.
