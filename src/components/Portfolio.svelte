@@ -442,7 +442,7 @@
 	}
 	.reading-surface {
 		padding: 72px 48px 0;
-		background: linear-gradient(transparent, #fffffff0 140px);
+		background: linear-gradient(transparent, rgb(255 255 255 / 50%) 140px);
 	}
 	footer {
 		display: flex;

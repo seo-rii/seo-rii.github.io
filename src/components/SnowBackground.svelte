@@ -28,7 +28,8 @@
 		reducedMotion = reduced.matches;
 		snowAmount = settings.snowAmount * (atTop ? 1 : 0.16);
 		const instance = mountInkSnow(host, {
-			settings: { ...settings, snowAmount },
+			// Reverse the supplied preset's cameraSame direction while keeping its other settings.
+			settings: { ...settings, scrollMode: 'camera', snowAmount },
 			paused: paused || reduced.matches,
 			controls: false,
 			scrollContainer: window

@@ -107,6 +107,7 @@ test('leaving the top reduces snow, the hero symbol scrolls away, and section an
 	await page.goto('/');
 	await expectSnowReady(page);
 	await expectSnowAmount(page, '1');
+	await expect(page.locator('.snow-host [data-control="scrollMode"]')).toHaveValue('camera');
 	await expect(page.getByRole('img', { name: 'seorii 눈송이 심볼' })).toBeInViewport();
 
 	await page.evaluate(() => window.scrollTo({ top: 1, behavior: 'instant' }));

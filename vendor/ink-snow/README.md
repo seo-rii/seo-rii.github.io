@@ -6,9 +6,11 @@ The source archive SHA-256 is `fa6cc9f75b37f4b73a4630197f82587444e88e1b50c76aef9
 
 The portfolio uses the package's public `mountInkSnow` API from
 `src/components/SnowBackground.svelte`. The original settings file is preserved
-in `src/lib/snow-settings.json`. Only `snowAmount` changes while reading:
-100% at the top of the document and 16% below it. The engine fades individual
-particles, so this reduces their count without resetting the scene.
+in `src/lib/snow-settings.json`. The site overrides `scrollMode` from
+`cameraSame` to `camera` to reverse scroll motion. Only `snowAmount` changes
+while reading: 100% at the top of the document and 16% below it. The engine
+fades individual particles, so this reduces their count without resetting the
+scene.
 
 The renderer handles reduced-motion preferences, document visibility, resize,
 and resource disposal. The wrapper forwards pointer movement without blocking

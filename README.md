@@ -45,9 +45,12 @@ request links to the downloadable artifact in this directory.
 - The supplied InkSnow 1.3.5 runtime is in `vendor/ink-snow/`; its provenance and
   source archive checksum are documented there.
 - `src/lib/snow-settings.json` preserves the supplied settings values.
+- The site overrides `scrollMode` to `camera`, reversing the supplied preset's
+  `cameraSame` direction: scrolling down moves the snow and clouds upward.
 - The top of the document uses the original `snowAmount: 1`. Any scroll below
   the top reduces it to `0.16`; returning to the top restores it to `1`. The
   renderer transitions particle count without restarting the scene.
+- The translucent reading surface keeps the snow visible behind the content.
 - The original snowflake symbol is a static image within the first screen.
 - The background respects reduced motion, pauses in hidden tabs, and can be
   paused manually. It does not intercept links, keyboard input, or scrolling.
