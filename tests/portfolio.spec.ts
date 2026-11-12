@@ -74,6 +74,10 @@ test('desktop has accessible structure, social links and persistent Korean/Engli
 	await expect(page.locator('html')).toHaveAttribute('lang', 'ko');
 	await expect(page.getByRole('main')).toHaveCount(1);
 	await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+	await expect(page.getByRole('banner').getByRole('navigation')).toHaveCount(0);
+	await expect(page.getByText('A FEW THINGS ABOUT ME')).toHaveCount(0);
+	await expect(page.getByText('A SMALL MARK, MY OWN.')).toHaveCount(0);
+	await expect(page.getByRole('link', { name: '아래로', exact: true })).toBeVisible();
 	await expect(page.getByRole('heading', { level: 1 })).toContainText('어떤 것을 만듭니다.');
 	await expect(page.getByRole('button', { name: '한국어', exact: true })).toHaveAttribute(
 		'aria-pressed',
@@ -86,6 +90,7 @@ test('desktop has accessible structure, social links and persistent Korean/Engli
 
 	await page.getByRole('button', { name: 'English', exact: true }).click();
 	await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+	await expect(page.getByRole('link', { name: 'Scroll down', exact: true })).toBeVisible();
 	await expect(page.getByRole('heading', { level: 1 })).toContainText('I make things');
 	await expect(page.getByRole('heading', { name: "Where I've been", exact: true })).toBeVisible();
 	await page.reload();
@@ -208,6 +213,10 @@ test('standalone HTML works from file:// offline without external scripts, fonts
 	await page.goto(pathToFileURL(resolve('review/seorii-preview.html')).href);
 	await expectSnowReady(page);
 	await expectSnowAmount(page, '1');
+	await expect(page.getByRole('banner').getByRole('navigation')).toHaveCount(0);
+	await expect(page.getByText('A FEW THINGS ABOUT ME')).toHaveCount(0);
+	await expect(page.getByText('A SMALL MARK, MY OWN.')).toHaveCount(0);
+	await expect(page.locator('.snow-host [data-control="scrollMode"]')).toHaveValue('camera');
 	await expect(page.locator('.hero-symbol img')).toHaveAttribute('src', /^data:image\//);
 	await expect
 		.poll(() =>

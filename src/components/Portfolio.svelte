@@ -11,9 +11,6 @@
 	let reducedMotion = $state(false);
 	const copy = {
 		ko: {
-			about: '다닌 곳',
-			projects: '만든 것',
-			awards: '받은 상',
 			name: '이서현',
 			role: 'KAIST 전산학부 · 22학번',
 			line1: '이 세상의',
@@ -21,7 +18,7 @@
 			intro:
 				'알고리즘 문제 해결부터 웹사이트까지.\n생각을 코드로 옮기고, 쓸 수 있는 무언가로 만듭니다.',
 			viewWork: '만든 것 둘러보기',
-			scroll: '아래로, 조금 더',
+			scroll: '아래로',
 			pause: '눈 잠시 멈추기',
 			resume: '눈 다시 내리기',
 			reducedMotion: '동작 줄이기 설정 사용 중',
@@ -31,9 +28,6 @@
 				'이서현, seorii. KAIST 전산학부. 알고리즘부터 웹까지, 만들어 온 것들과 경험을 소개합니다.'
 		},
 		en: {
-			about: 'About',
-			projects: 'Work',
-			awards: 'Awards',
 			name: 'Seohyun Lee',
 			role: 'Computer Science at KAIST · Entered in 2022',
 			line1: 'I make things',
@@ -41,7 +35,7 @@
 			intro:
 				'From algorithms to websites.\nTurning ideas into code, and code into things you can use.',
 			viewWork: 'Explore my work',
-			scroll: 'A little further down',
+			scroll: 'Scroll down',
 			pause: 'Pause snow',
 			resume: 'Resume snow',
 			reducedMotion: 'Reduced motion is on',
@@ -111,11 +105,6 @@
 	<a class="skip-link" href="#about">{text.skip}</a>
 	<header class="site-header">
 		<a class="wordmark" href="#top" aria-label="seorii">seorii<span aria-hidden="true">.</span></a>
-		<nav aria-label={language === 'ko' ? '주요 메뉴' : 'Main navigation'}>
-			<a href="#about">{text.about}</a>
-			<a href="#projects">{text.projects}</a>
-			<a href="#awards">{text.awards}</a>
-		</nav>
 		<div class="language-switch" role="group" aria-label="Language / 언어">
 			<button
 				type="button"
@@ -139,7 +128,6 @@
 		<section class="hero" aria-labelledby="intro-title">
 			<div class="hero-main">
 				<div class="hero-copy">
-					<p class="eyebrow">A FEW THINGS ABOUT ME</p>
 					<h1 id="intro-title"><span>{text.line1}</span><span>{text.line2}</span></h1>
 					<p class="identity"><strong>{text.name}</strong><span class="alias">/ seorii</span></p>
 					<p class="role">{text.role}</p>
@@ -155,7 +143,6 @@
 						height="2295"
 						fetchpriority="high"
 					/>
-					<span class="symbol-caption" aria-hidden="true">A SMALL MARK, MY OWN.</span>
 				</div>
 			</div>
 			<div class="hero-bottom">
@@ -225,24 +212,10 @@
 	.wordmark span {
 		color: #5a88a6;
 	}
-	nav {
-		display: flex;
-		gap: 28px;
-		margin-left: auto;
-	}
-	nav a {
-		font-size: 13px;
-		text-decoration: none;
-		color: var(--muted);
-		padding-block: 12px;
-	}
-	nav a:hover {
-		color: var(--ink);
-		text-decoration: underline;
-	}
 	.language-switch {
 		display: flex;
 		gap: 8px;
+		margin-left: auto;
 		align-items: center;
 		font-size: 11px;
 	}
@@ -275,13 +248,6 @@
 		gap: 40px;
 		flex: 1;
 		padding-block: 64px 72px;
-	}
-	.eyebrow {
-		font-size: 10px;
-		letter-spacing: 0.2em;
-		color: var(--muted);
-		margin: 0 0 32px;
-		font-weight: 600;
 	}
 	h1 {
 		margin: 0 0 36px;
@@ -341,7 +307,7 @@
 		position: relative;
 		display: grid;
 		place-items: center;
-		padding: 40px 0 64px;
+		padding: 40px 0;
 	}
 	.symbol-halo {
 		position: absolute;
@@ -357,13 +323,6 @@
 		filter: brightness(0) saturate(100%) invert(27%) sepia(18%) saturate(896%) hue-rotate(160deg)
 			brightness(89%) contrast(86%);
 		opacity: 0.82;
-	}
-	.symbol-caption {
-		position: absolute;
-		bottom: 2px;
-		color: #657b8d;
-		font-size: 8px;
-		letter-spacing: 0.18em;
 	}
 	.hero-bottom {
 		padding-bottom: 24px;
@@ -508,15 +467,6 @@
 		.wordmark {
 			font-size: 25px;
 		}
-		nav {
-			gap: 16px;
-		}
-		nav a {
-			font-size: 11px;
-		}
-		nav a:last-child {
-			display: none;
-		}
 		.language-switch {
 			gap: 5px;
 		}
@@ -531,10 +481,6 @@
 		.hero-copy {
 			position: relative;
 			z-index: 1;
-		}
-		.eyebrow {
-			font-size: 8px;
-			margin-bottom: 38px;
 		}
 		h1 {
 			font-size: clamp(30px, 8.1vw, 48px);
@@ -561,9 +507,6 @@
 		.hero-symbol img {
 			width: 58px;
 			opacity: 0.7;
-		}
-		.symbol-caption {
-			display: none;
 		}
 		.social-links {
 			grid-template-columns: repeat(2, 1fr);
