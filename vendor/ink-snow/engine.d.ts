@@ -37,6 +37,8 @@ export interface InkSnowOptions {
   readOnly?:boolean;
   foregroundRoot?:HTMLElement;
   scrollContainer?:Window|HTMLElement|null;
+  /** Use the configured fps for scroll redraws; defaults to display-rate reprojection. */
+  scrollFrameRate?:'display'|'capture';
   debug?:boolean;
   onSettingsChange?:(settings:InkSnowSettings)=>void;
   onPausedChange?:(paused:boolean)=>void;

@@ -47,6 +47,10 @@ request links to the downloadable artifact in this directory.
 - `src/lib/snow-settings.json` preserves the supplied settings values.
 - The site overrides `scrollMode` to `camera`, reversing the supplied preset's
   `cameraSame` direction: scrolling down moves the snow and clouds upward.
+- Scroll redraws follow the preset's 12fps cadence instead of rendering the
+  entire backdrop at the display refresh rate. `scrollBlur: 0` removes the
+  expensive speed-dependent exposure while preserving the preset's normal
+  falling-snow blur, camera motion, and cloud movement.
 - The top of the document uses the original `snowAmount: 1`. Any scroll below
   the top reduces it to `0.25`; returning to the top restores it to `1`. The
   renderer transitions particle count without restarting the scene.

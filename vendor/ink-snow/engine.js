@@ -2265,7 +2265,10 @@ function compactSpriteBasis(p,motion){
         advanceTo(target);
       }else{advanceTo(target);captureIndex++;render();captured=true;}
     }
-    if((cameraChanged||cloudChanged||renderedScrollEffects!==scrollEffectKey())&&!captured){render(false,true);captured=true;}
+    // Background integrations can retain the configured film cadence during
+    // scrolling. Camera/cloud deltas still accumulate on every display frame.
+    const scrollFrameDue=options.scrollFrameRate!=='capture'||settings.fps<=0;
+    if(scrollFrameDue&&(cameraChanged||cloudChanged||renderedScrollEffects!==scrollEffectKey())&&!captured){render(false,true);captured=true;}
     if(captured||(!isStaggered()&&settings.temporal==='soft'&&settings.fps>0&&transitionReady))presentOutput(elapsed);
     if(cameraChanged&&Number.isFinite(scrollInputMs))lastScrollResponseMs=window.performance.now()-scrollInputMs;
     last=now;raf=requestAnimationFrame(animate);

@@ -50,8 +50,17 @@
 		reducedMotion = reduced.matches;
 		snowAmount = atTop ? settings.snowAmount : readingSnowAmount;
 		const instance = mountInkSnow(host, {
-			// Reverse the supplied preset's cameraSame direction while keeping its other settings.
-			settings: { ...settings, ...themeSettings(), scrollMode: 'camera', snowAmount },
+			settings: {
+				...settings,
+				...themeSettings(),
+				scrollMode: 'camera',
+				// Speed-dependent exposure expands CPU kernels and redraws clouds five
+				// times during fast scrolls. Keep the preset's normal falling-snow blur.
+				scrollBlur: 0,
+				snowAmount
+			},
+			// Let document scrolling stay smooth while the backdrop follows its 12fps preset.
+			scrollFrameRate: 'capture',
 			paused: paused || reduced.matches,
 			controls: false,
 			scrollContainer: window
