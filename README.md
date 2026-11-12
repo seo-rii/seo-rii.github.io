@@ -54,6 +54,10 @@ request links to the downloadable artifact in this directory.
 - The top of the document uses the original `snowAmount: 1`. Any scroll below
   the top reduces it to `0.25`; returning to the top restores it to `1`. The
   renderer transitions particle count without restarting the scene.
+- Natural falling snow re-enters through spaced, inward-moving routes when it
+  leaves the view. This prevents depth changes from repeatedly bouncing the
+  same particles between opposite edges and concentrating long-running inlets.
+  Scroll-driven camera movement keeps its continuous transport behavior.
 - The page and snow scene follow the system's light or dark color scheme,
   including changes while the page is open. Theme changes keep the existing
   canvas, scroll density, and pause state.
