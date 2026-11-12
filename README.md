@@ -51,6 +51,10 @@ request links to the downloadable artifact in this directory.
   the top reduces it to `0.16`; returning to the top restores it to `1`. The
   renderer transitions particle count without restarting the scene.
 - The translucent reading surface keeps the snow visible behind the content.
+- The snow stage uses the large viewport height (`100lvh`, with a `100vh`
+  fallback) inside a clipped fixed viewport. Mobile browser toolbars can change
+  the visible area without resizing the canvas; window and orientation changes
+  still update the scene dimensions.
 - The original snowflake symbol is a static image within the first screen.
 - The background respects reduced motion, pauses in hidden tabs, and can be
   paused manually. It does not intercept links, keyboard input, or scrolling.

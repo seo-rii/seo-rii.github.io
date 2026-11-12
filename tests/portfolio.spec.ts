@@ -198,6 +198,109 @@ for (const width of [320, 390]) {
 	});
 }
 
+test.describe('mobile snow viewport', () => {
+	test.use({
+		viewport: { width: 390, height: 844 },
+		isMobile: true,
+		hasTouch: true,
+		reducedMotion: 'reduce'
+	});
+
+	for (const target of ['production', 'standalone'] as const) {
+		test(`${target} keeps the snow backing store fixed while the clipping aperture changes`, async ({
+			page
+		}) => {
+			test.setTimeout(60_000);
+			await page.goto(
+				target === 'production' ? '/' : pathToFileURL(resolve('review/seorii-preview.html')).href
+			);
+			await expectSnowReady(page);
+			await expect(page.locator('.snow-host')).toHaveAttribute('data-running', 'false');
+			await expectSnowFrozen(page);
+			expect(await page.evaluate(() => document.visibilityState)).toBe('visible');
+
+			type TrackedCanvas = HTMLCanvasElement & {
+				__snowSizeWrites?: number;
+				__snowResizeObserver?: MutationObserver;
+			};
+			const canvas = page.locator('.snow-host canvas');
+			const wrapper = page.locator('.snow-background');
+			await canvas.evaluate((element) => {
+				const tracked = element as TrackedCanvas;
+				tracked.__snowSizeWrites = 0;
+				tracked.__snowResizeObserver = new MutationObserver((records) => {
+					tracked.__snowSizeWrites! += records.length;
+				});
+				tracked.__snowResizeObserver.observe(tracked, {
+					attributes: true,
+					attributeFilter: ['width', 'height']
+				});
+			});
+			const initialSize = await canvas.evaluate((element) => {
+				const target = element as HTMLCanvasElement;
+				return { width: target.width, height: target.height };
+			});
+
+			// Headless Chromium has no collapsing address bar. Vary only the clip
+			// aperture, keeping the device viewport fixed, to verify the same sizing contract.
+			for (const height of [690, 760, 660, 844]) {
+				await wrapper.evaluate((element, height) => {
+					(element as HTMLElement).style.height = `${height}px`;
+					window.dispatchEvent(new Event('resize'));
+					window.visualViewport?.dispatchEvent(new Event('resize'));
+				}, height);
+				await page.evaluate(
+					() =>
+						new Promise<void>((resolve) =>
+							requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+						)
+				);
+				await expect(wrapper).toHaveCSS('overflow', 'hidden');
+				const clippingBox = await wrapper.boundingBox();
+				expect(clippingBox?.height).toBe(height);
+				const current = await canvas.evaluate((element) => {
+					const tracked = element as TrackedCanvas;
+					return {
+						size: { width: tracked.width, height: tracked.height },
+						writes: tracked.__snowSizeWrites ?? 0
+					};
+				});
+				expect(current.size, `Clipping to ${height}px must not resize the rendered scene`).toEqual(
+					initialSize
+				);
+				expect(
+					current.writes,
+					'Viewport clipping must not reallocate the canvas backing store'
+				).toBe(0);
+			}
+
+			await wrapper.evaluate((element) => (element as HTMLElement).style.removeProperty('height'));
+			await page.setViewportSize({ width: 844, height: 390 });
+			await expect
+				.poll(() =>
+					canvas.evaluate((element) => {
+						const target = element as HTMLCanvasElement;
+						return { width: target.width, height: target.height };
+					})
+				)
+				.not.toEqual(initialSize);
+			await expect
+				.poll(() => canvas.evaluate((element) => (element as TrackedCanvas).__snowSizeWrites ?? 0))
+				.toBeGreaterThan(0);
+			const coverage = await canvas.boundingBox();
+			expect(coverage).not.toBeNull();
+			expect(coverage!.x).toBe(0);
+			expect(coverage!.y).toBe(0);
+			expect(coverage!.width).toBe(844);
+			expect(coverage!.height).toBe(390);
+			await expectNoHorizontalOverflow(page);
+			await canvas.evaluate((element) =>
+				(element as TrackedCanvas).__snowResizeObserver?.disconnect()
+			);
+		});
+	}
+});
+
 test('standalone HTML works from file:// offline without external scripts, fonts or images', async ({
 	page,
 	context

@@ -99,7 +99,9 @@
 	data-snow-amount={snowAmount}
 	data-paused={paused || reducedMotion}
 >
-	<div class="snow-host" bind:this={host}></div>
+	<div class="snow-surface">
+		<div class="snow-host" bind:this={host}></div>
+	</div>
 </div>
 
 <style>
@@ -110,6 +112,13 @@
 		pointer-events: none;
 		overflow: hidden;
 		background: #ffffff;
+	}
+
+	.snow-surface {
+		width: 100%;
+		/* Keep the drawing surface stable while browser chrome changes the clip. */
+		height: 100vh;
+		height: 100lvh;
 	}
 
 	.snow-host {
