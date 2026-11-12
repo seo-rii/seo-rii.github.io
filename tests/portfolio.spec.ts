@@ -27,7 +27,7 @@ async function expectSnowReady(page: Page) {
 async function expectSnowAmount(page: Page, amount: '1' | '0.16') {
 	await expect(page.locator('.snow-background')).toHaveAttribute('data-snow-amount', amount);
 	// The engine's text output reflects its setting exactly. Its range input has
-	// step=10, so Chromium rounds a 16% setting to 20 on that hidden slider.
+	// step=10, so the hidden range input can round an intermediate percentage.
 	await expect(page.locator('.snow-host [data-control="snowAmount-value"]')).toHaveText(
 		amount === '1' ? '100%' : '16%'
 	);
@@ -64,6 +64,67 @@ async function expectNoHorizontalOverflow(page: Page) {
 	await expect
 		.poll(() => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth))
 		.toBeLessThanOrEqual(0);
+}
+
+async function expectColorScheme(page: Page, scheme: 'light' | 'dark') {
+	const colors =
+		scheme === 'dark'
+			? { background: '#101923', snow: '#e5eff8', wash: '#355c80', rgb: 'rgb(16, 25, 35)' }
+			: { background: '#ffffff', snow: '#090e13', wash: '#4f87ad', rgb: 'rgb(255, 255, 255)' };
+	await expect(page.locator('html')).toHaveCSS('background-color', colors.rgb);
+	expect(
+		await page.locator('html').evaluate((root) => getComputedStyle(root).colorScheme.split(/\s+/))
+	).toContain(scheme);
+	await expect(page.locator('.snow-host')).toHaveAttribute('data-theme', scheme);
+	for (const [control, value] of [
+		['backgroundColor', colors.background],
+		['snowColor', colors.snow],
+		['washColor', colors.wash]
+	]) {
+		await expect(page.locator(`.snow-host [data-control="${control}"]`)).toHaveValue(value);
+	}
+	const themeColor = await page.locator('meta[name="theme-color"]').evaluateAll((elements) => {
+		const active = elements.find((element) => {
+			const media = element.getAttribute('media');
+			return !media || matchMedia(media).matches;
+		});
+		const color = active?.getAttribute('content')?.toLowerCase();
+		return color?.length === 4
+			? `#${[...color.slice(1)].map((digit) => digit + digit).join('')}`
+			: color;
+	});
+	expect(themeColor, 'Browser chrome follows the active site color scheme').toBe(colors.background);
+
+	const contrast = await page.evaluate(() => {
+		const luminance = (color: string) => {
+			const rgb = color
+				.match(/[\d.]+/g)
+				?.slice(0, 3)
+				.map(Number);
+			if (!rgb || rgb.length !== 3) throw new Error(`Expected an RGB color: ${color}`);
+			const linear = rgb.map((value) => {
+				const channel = value / 255;
+				return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+			});
+			return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+		};
+		const background = luminance(getComputedStyle(document.documentElement).backgroundColor);
+		return ['h1', '.prose', '.prose a', '.social-detail'].map((selector) => {
+			const element = document.querySelector(selector);
+			if (!element) throw new Error(`Missing readable content: ${selector}`);
+			const text = luminance(getComputedStyle(element).color);
+			return {
+				selector,
+				ratio: (Math.max(text, background) + 0.05) / (Math.min(text, background) + 0.05)
+			};
+		});
+	});
+	for (const { selector, ratio } of contrast) {
+		expect(
+			ratio,
+			`${selector} stays readable against the page base in ${scheme} mode`
+		).toBeGreaterThanOrEqual(4.5);
+	}
 }
 
 test('desktop has accessible structure, social links and persistent Korean/English selection', async ({
@@ -313,6 +374,64 @@ test.describe('mobile snow viewport', () => {
 			await canvas.evaluate((element) =>
 				(element as TrackedCanvas).__snowResizeObserver?.disconnect()
 			);
+		});
+	}
+});
+
+test.describe('system color scheme', () => {
+	test.use({ reducedMotion: 'reduce' });
+
+	for (const target of ['production', 'standalone'] as const) {
+		test(`${target} follows dark and light preferences without remounting or resuming paused snow`, async ({
+			page,
+			context
+		}) => {
+			test.setTimeout(60_000);
+			if (target === 'standalone') {
+				await page.setViewportSize({ width: 390, height: 844 });
+				await context.setOffline(true);
+			}
+			await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
+			await page.goto(
+				target === 'production' ? '/' : pathToFileURL(resolve('review/seorii-preview.html')).href
+			);
+			await expectSnowReady(page);
+			await expectColorScheme(page, 'dark');
+			await expect(page.locator('.hero-symbol img')).toBeVisible();
+			await expect(page.getByRole('link', { name: /LinkedIn/ })).toBeVisible();
+			await expect(page.locator('.snow-host')).toHaveAttribute('data-running', 'false');
+			const canvas = page.locator('.snow-host canvas');
+			await canvas.evaluate((element) => element.setAttribute('data-theme-sentinel', 'preserved'));
+			const initialSize = await canvas.evaluate((element) => {
+				const surface = element as HTMLCanvasElement;
+				return { width: surface.width, height: surface.height };
+			});
+			await page.evaluate(() => window.scrollTo({ top: 1, behavior: 'instant' }));
+			await expectSnowAmount(page, '0.16');
+
+			await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
+			await expectColorScheme(page, 'light');
+			await expectSnowAmount(page, '0.16');
+			await expect(page.locator('.snow-host')).toHaveAttribute('data-running', 'false');
+			await expectSnowFrozen(page);
+
+			await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'no-preference' });
+			await expect(page.locator('.snow-host')).toHaveAttribute('data-running', 'true');
+			await page.getByRole('button', { name: /눈 잠시 멈추기/ }).click();
+			await expect(page.locator('.snow-toggle')).toHaveAttribute('aria-pressed', 'true');
+			await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'no-preference' });
+			await expectColorScheme(page, 'dark');
+			await expectSnowAmount(page, '0.16');
+			await expect(page.locator('.snow-host')).toHaveAttribute('data-running', 'false');
+			await expectSnowFrozen(page);
+			await expect(canvas).toHaveAttribute('data-theme-sentinel', 'preserved');
+			expect(
+				await canvas.evaluate((element) => {
+					const surface = element as HTMLCanvasElement;
+					return { width: surface.width, height: surface.height };
+				})
+			).toEqual(initialSize);
+			await expectNoHorizontalOverflow(page);
 		});
 	}
 });

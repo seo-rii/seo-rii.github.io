@@ -7,15 +7,63 @@
 		'Segoe UI',
 		'Noto Sans KR',
 		sans-serif;
-	color: #253747;
-	background: #fff;
+	color-scheme: light;
+	color: var(--ink);
+	background: var(--background);
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
+	--background: #ffffff;
 	--ink: #253747;
+	--heading: #243a4b;
+	--text: #394654;
 	--muted: #5d6f7d;
+	--intro: #4b606e;
 	--accent: #406b88;
 	--line: rgba(35, 52, 68, 0.16);
+	--section-line: rgb(35 52 68 / 14%);
+	--article-line: rgb(35 52 68 / 10%);
+	--section-index: #6a7d8c;
+	--link-decoration: #8b9ba7;
+	--brand-accent: #5a88a6;
+	--divider: #96a0a9;
+	--work-line: #607c8f;
+	--work-hover: #497e9d;
+	--link-hover: #e3edf34d;
+	--reading-overlay: rgb(255 255 255 / 50%);
+	--selection-background: #dce8f0;
+	--selection-ink: #253747;
+	--symbol-halo: radial-gradient(circle, #d9e5ed99 0%, #eef3f75c 48%, transparent 70%);
+	--symbol-filter: brightness(0) saturate(100%) invert(27%) sepia(18%) saturate(896%)
+		hue-rotate(160deg) brightness(89%) contrast(86%);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		color-scheme: dark;
+		--background: #101923;
+		--ink: #e5eef5;
+		--heading: #e5eef5;
+		--text: #c9d5df;
+		--muted: #a6b8c6;
+		--intro: #c1d0db;
+		--accent: #a1c4dc;
+		--line: rgb(185 210 230 / 24%);
+		--section-line: rgb(185 210 230 / 20%);
+		--article-line: rgb(185 210 230 / 14%);
+		--section-index: #8fa7ba;
+		--link-decoration: #8faec4;
+		--brand-accent: #94bcd8;
+		--divider: #7993a8;
+		--work-line: #88a9c0;
+		--work-hover: #d1e7f6;
+		--link-hover: rgb(127 171 200 / 12%);
+		--reading-overlay: rgb(16 25 35 / 50%);
+		--selection-background: #31546c;
+		--selection-ink: #f2f7fb;
+		--symbol-halo: radial-gradient(circle, #5077944d 0%, #1f34462b 48%, transparent 70%);
+		--symbol-filter: brightness(0) invert(1);
+	}
 }
 
 * {
@@ -51,8 +99,8 @@ a:focus-visible {
 	outline-offset: 5px;
 }
 ::selection {
-	background: #dce8f0;
-	color: #253747;
+	background: var(--selection-background);
+	color: var(--selection-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {

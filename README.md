@@ -50,6 +50,9 @@ request links to the downloadable artifact in this directory.
 - The top of the document uses the original `snowAmount: 1`. Any scroll below
   the top reduces it to `0.16`; returning to the top restores it to `1`. The
   renderer transitions particle count without restarting the scene.
+- The page and snow scene follow the system's light or dark color scheme,
+  including changes while the page is open. Theme changes keep the existing
+  canvas, scroll density, and pause state.
 - The translucent reading surface keeps the snow visible behind the content.
 - The snow stage uses the large viewport height (`100lvh`, with a `100vh`
   fallback) inside a clipped fixed viewport. Mobile browser toolbars can change
@@ -74,5 +77,6 @@ pnpm test
 ```
 
 The Chromium suite checks the production site and the downloaded `file://`
-preview, including mobile widths, Korean/English controls, scroll-dependent snow
-count, pause and reduced motion, navigation, and offline resource loading.
+preview, including mobile widths, Korean/English controls, light/dark themes,
+scroll-dependent snow count, pause and reduced motion, navigation, and offline
+resource loading.

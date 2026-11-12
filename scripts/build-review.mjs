@@ -49,7 +49,7 @@ const html = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light">
+<meta name="color-scheme" content="light dark">
 <link rel="icon" href="data:image/x-icon;base64,${favicon}">
 <title>이서현 · seorii</title>
 <style>${css}</style>

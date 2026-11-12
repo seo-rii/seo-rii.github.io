@@ -33,12 +33,12 @@
 		max-width: 1120px;
 		margin: 0 auto;
 		padding: 96px 0;
-		border-top: 1px solid rgb(35 52 68 / 14%);
+		border-top: 1px solid var(--section-line);
 		scroll-margin-top: 104px;
 	}
 
 	.section-index {
-		color: #6a7d8c;
+		color: var(--section-index);
 		font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
 		font-size: 0.75rem;
 		letter-spacing: 0.12em;
@@ -46,7 +46,7 @@
 
 	h2 {
 		margin: 16px 0 0;
-		color: #243a4b;
+		color: var(--heading);
 		font-size: 1.65rem;
 		font-weight: 600;
 		letter-spacing: -0.035em;
@@ -55,7 +55,7 @@
 
 	.prose {
 		min-width: 0;
-		color: #394654;
+		color: var(--text);
 		font-size: 1rem;
 		line-height: 1.85;
 		overflow-wrap: anywhere;
@@ -71,12 +71,12 @@
 
 	.prose :global(article + article) {
 		padding-top: 32px;
-		border-top: 1px solid rgb(35 52 68 / 10%);
+		border-top: 1px solid var(--article-line);
 	}
 
 	.prose :global(h3) {
 		margin: 0 0 16px;
-		color: #243a4b;
+		color: var(--heading);
 		font-size: 1.35rem;
 		font-weight: 600;
 		letter-spacing: -0.025em;
@@ -84,7 +84,7 @@
 	}
 
 	.prose :global(a) {
-		text-decoration-color: #8b9ba7;
+		text-decoration-color: var(--link-decoration);
 		text-underline-offset: 0.2em;
 	}
 
@@ -98,7 +98,7 @@
 	}
 
 	.prose :global(li::marker) {
-		color: #8b9ba7;
+		color: var(--link-decoration);
 	}
 
 	.prose > :global(:last-child),

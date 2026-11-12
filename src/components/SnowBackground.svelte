@@ -22,14 +22,36 @@
 		// Keep the supplied preset intact; the engine changes particle count with
 		// its own fade instead of restarting the animation or fading the canvas.
 		const settings = preset.settings as InkSnowSettings;
+		const readingSnowAmount = settings.snowAmount * 0.16;
 		let atTop = window.scrollY <= 0;
 		let motionTimer = 0;
 		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+		const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
+
+		function themeSettings(): Pick<
+			InkSnowSettings,
+			'theme' | 'snowColor' | 'backgroundColor' | 'washColor'
+		> {
+			return colorScheme.matches
+				? {
+						theme: 'dark',
+						snowColor: '#e5eff8',
+						backgroundColor: '#101923',
+						washColor: '#355c80'
+					}
+				: {
+						theme: settings.theme,
+						snowColor: settings.snowColor,
+						backgroundColor: settings.backgroundColor,
+						washColor: settings.washColor
+					};
+		}
+
 		reducedMotion = reduced.matches;
-		snowAmount = settings.snowAmount * (atTop ? 1 : 0.16);
+		snowAmount = atTop ? settings.snowAmount : readingSnowAmount;
 		const instance = mountInkSnow(host, {
 			// Reverse the supplied preset's cameraSame direction while keeping its other settings.
-			settings: { ...settings, scrollMode: 'camera', snowAmount },
+			settings: { ...settings, ...themeSettings(), scrollMode: 'camera', snowAmount },
 			paused: paused || reduced.matches,
 			controls: false,
 			scrollContainer: window
@@ -42,8 +64,11 @@
 			const nextAtTop = window.scrollY <= 0;
 			if (nextAtTop === atTop) return;
 			atTop = nextAtTop;
-			snowAmount = settings.snowAmount * (atTop ? 1 : 0.16);
+			snowAmount = atTop ? settings.snowAmount : readingSnowAmount;
 			instance.update({ snowAmount });
+		}
+		function updateColorScheme() {
+			instance.update(themeSettings());
 		}
 		function updateMotionPreference() {
 			reducedMotion = reduced.matches;
@@ -77,6 +102,7 @@
 		window.addEventListener('pointermove', forwardPointer, { passive: true });
 		window.addEventListener('pointerout', leavePointer, { passive: true });
 		reduced.addEventListener('change', updateMotionPreference);
+		colorScheme.addEventListener('change', updateColorScheme);
 
 		return () => {
 			window.clearTimeout(motionTimer);
@@ -85,6 +111,7 @@
 			window.removeEventListener('pointermove', forwardPointer);
 			window.removeEventListener('pointerout', leavePointer);
 			reduced.removeEventListener('change', updateMotionPreference);
+			colorScheme.removeEventListener('change', updateColorScheme);
 			instance.destroy();
 			api = null;
 		};
@@ -111,7 +138,7 @@
 		z-index: 0;
 		pointer-events: none;
 		overflow: hidden;
-		background: #ffffff;
+		background: var(--background, #ffffff);
 	}
 
 	.snow-surface {

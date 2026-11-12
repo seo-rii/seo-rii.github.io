@@ -91,7 +91,8 @@
 <svelte:head>
 	<title>{language === 'ko' ? '이서현' : 'Seohyun Lee'} · seorii</title>
 	<meta name="description" content={text.description} />
-	<meta name="theme-color" content="#ffffff" />
+	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+	<meta name="theme-color" content="#101923" media="(prefers-color-scheme: dark)" />
 	<meta property="og:title" content="Seohyun Lee · seorii" />
 	<meta property="og:description" content={text.description} />
 	<meta property="og:type" content="website" />
@@ -210,7 +211,7 @@
 		text-decoration: none;
 	}
 	.wordmark span {
-		color: #5a88a6;
+		color: var(--brand-accent);
 	}
 	.language-switch {
 		display: flex;
@@ -220,7 +221,7 @@
 		font-size: 11px;
 	}
 	.language-switch span {
-		color: #96a0a9;
+		color: var(--divider);
 	}
 	.language-switch button {
 		cursor: pointer;
@@ -284,7 +285,7 @@
 		white-space: pre-line;
 		line-height: 1.9;
 		font-size: 14px;
-		color: #4b606e;
+		color: var(--intro);
 		word-break: keep-all;
 	}
 	.work-link {
@@ -294,14 +295,14 @@
 		font-size: 13px;
 		font-weight: 600;
 		text-decoration: none;
-		border-bottom: 1px solid #607c8f;
+		border-bottom: 1px solid var(--work-line);
 		padding-bottom: 10px;
 	}
 	.work-link span {
 		font-size: 20px;
 	}
 	.work-link:hover {
-		color: #497e9d;
+		color: var(--work-hover);
 	}
 	.hero-symbol {
 		position: relative;
@@ -314,14 +315,13 @@
 		width: 100%;
 		aspect-ratio: 1;
 		border-radius: 50%;
-		background: radial-gradient(circle, #d9e5ed99 0%, #eef3f75c 48%, transparent 70%);
+		background: var(--symbol-halo);
 	}
 	.hero-symbol img {
 		position: relative;
 		width: min(100%, 300px);
 		height: auto;
-		filter: brightness(0) saturate(100%) invert(27%) sepia(18%) saturate(896%) hue-rotate(160deg)
-			brightness(89%) contrast(86%);
+		filter: var(--symbol-filter);
 		opacity: 0.82;
 	}
 	.hero-bottom {
@@ -351,7 +351,7 @@
 		border-left: 1px solid var(--line);
 	}
 	.social-links a:hover {
-		background: #e3edf34d;
+		background: var(--link-hover);
 	}
 	.social-name {
 		display: flex;
@@ -401,7 +401,7 @@
 	}
 	.reading-surface {
 		padding: 72px 48px 0;
-		background: linear-gradient(transparent, rgb(255 255 255 / 50%) 140px);
+		background: linear-gradient(transparent, var(--reading-overlay) 140px);
 	}
 	footer {
 		display: flex;
@@ -427,7 +427,7 @@
 		top: -100px;
 		left: 16px;
 		padding: 16px;
-		background: white;
+		background: var(--background);
 	}
 	.skip-link:focus {
 		top: 16px;
