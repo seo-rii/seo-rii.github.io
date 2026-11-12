@@ -62,6 +62,7 @@ export function mountInkSnow(root, options={}) {
   const rendererControl=getControl('renderer'),layerControl=getControl('layer');
   const layerTimingControl=getControl('layerTiming');
   const settings=normalizeSettings(options.settings||{});
+  const buffered=options.scrollFrameRate==='buffered';
   softSnowControl.checked=settings.softSnowBlur;smoothGrainControl.checked=settings.smoothGrain;
   const looks={
     original:{fps:0,shutter:1,grain:0,weave:0,flicker:0,warm:0,vignette:0,mix:0},
@@ -72,6 +73,15 @@ export function mountInkSnow(root, options={}) {
   };
   if(!screen){status.className='';status.textContent='이 브라우저에서는 그림을 표시할 수 없습니다.';return;}
   const W=896,TAU=Math.PI*2;let H=Math.round(W*settings.aspectHeight/settings.aspectWidth);
+  // Padding is a raster viewport, not a different camera or particle reservoir.
+  // Keep it inside the existing 160px birth margin, including on mobile.
+  let renderPadding=isBufferedScroll()?128:0,renderTop=-renderPadding,renderHeight=H+renderPadding*2;
+  function isBufferedScroll(){return buffered&&settings.aspectMode==='auto'&&settings.scrollWind&&(settings.scrollMode==='camera'||settings.scrollMode==='cameraSame');}
+  function updateRenderBounds(){
+    const padding=isBufferedScroll()?128:0,height=H+padding*2;
+    if(padding===renderPadding&&height===renderHeight)return false;
+    renderPadding=padding;renderTop=-padding;renderHeight=height;return true;
+  }
   function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let a=Math.imul(seed^seed>>>15,1|seed);a=a+Math.imul(a^a>>>7,61|a)^a;return((a^a>>>14)>>>0)/4294967296;};}
   function watchSurface(c){
     listen(c,'contextlost',()=>{
@@ -85,7 +95,7 @@ export function mountInkSnow(root, options={}) {
       requestRecovery('2d-context-restored');
     });
   }
-  function surface(w=W,h=H){
+  function surface(w=W,h=renderHeight){
     const c=document.createElement('canvas');c.width=w;c.height=h;
     const g=c.getContext('2d');watchSurface(c);return[c,g];
   }
@@ -127,6 +137,8 @@ uniform float uStrength;
 uniform float uFlow;
 uniform float uPigment;
 uniform vec3 uBaseColor;
+uniform vec2 uViewport;
+uniform float uRenderTop;
 float hash21(vec2 p){
   vec3 q=fract(vec3(p.xyx)*0.1031);
   q+=dot(q,q.yzx+33.33);
@@ -152,7 +164,9 @@ vec3 densityAt(vec2 uv){
   return -log(max(texture2D(uImage,clamp(uv,vec2(0.0),vec2(1.0))).rgb,vec3(0.015))) + log(max(uBaseColor,vec3(0.015)));
 }
 void main(){
-  vec2 ref=vec2(896.0,896.0*uResolution.y/uResolution.x),p=vUv*vec2(uResolution.x/uResolution.y,1.0);
+  vec2 ref=vec2(896.0,896.0*uResolution.y/uResolution.x);
+  vec2 logical=vec2(vUv.x*ref.x,uRenderTop+vUv.y*ref.y);
+  vec2 p=uRenderTop==0.0?vUv*vec2(uResolution.x/uResolution.y,1.0):logical/uViewport.y;
   // Motion comes from the watercolor shapes. Keep paper, pigment and flow
   // coordinates stable so they do not add their own brightness modulation.
   float t=0.0;
@@ -166,7 +180,7 @@ void main(){
                     densityAt(uv-vec2(texel.x*2.4,0.0))+
                     densityAt(uv+vec2(0.0,texel.y*2.4))+
                     densityAt(uv-vec2(0.0,texel.y*2.4)))*0.25;
-  vec2 paper=vUv*ref;
+  vec2 paper=logical;
   float tooth=valueNoise(paper*0.31);
   float fibre=valueNoise(paper*vec2(0.10,0.61)+vec2(21.0,6.0));
   float pools=fbm(p*8.5+field*0.75+drift*0.4);
@@ -235,7 +249,7 @@ void main(){
         gl.attachShader(p,vertex);gl.attachShader(p,pixel);gl.bindAttribLocation(p,0,'aPosition');gl.linkProgram(p);
         if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p)||'Shader link failed');
         const uniforms={};
-        for(const name of ['uImage','uResolution','uTime','uStrength','uFlow','uPigment','uDiffusion','uBaseColor'])uniforms[name]=gl.getUniformLocation(p,name);
+        for(const name of ['uImage','uResolution','uTime','uStrength','uFlow','uPigment','uDiffusion','uBaseColor','uViewport','uRenderTop'])uniforms[name]=gl.getUniformLocation(p,name);
         return{program:p,uniforms};
       }catch(error){if(p)gl.deleteProgram(p);throw error;}
       finally{if(vertex)gl.deleteShader(vertex);if(pixel)gl.deleteShader(pixel);}
@@ -269,6 +283,8 @@ void main(){
           }else gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,gl.RGBA,gl.UNSIGNED_BYTE,source);
           const entry=programs[pass],u=entry.uniforms;gl.useProgram(entry.program);
           gl.uniform1i(u.uImage,0);gl.uniform2f(u.uResolution,width,height);gl.uniform1f(u.uTime,time);
+          if(u.uViewport)gl.uniform2f(u.uViewport,W,H);
+          if(u.uRenderTop)gl.uniform1f(u.uRenderTop,renderTop);
           gl.uniform1f(u.uStrength,settings.shaderStrength);gl.uniform1f(u.uFlow,settings.flow);
           if(u.uBaseColor)gl.uniform3fv(u.uBaseColor,hexRGB(settings.backgroundColor).map(x=>x/255));
           gl.uniform1f(u.uPigment,settings.pigment);gl.uniform1f(u.uDiffusion,settings.diffusion);
@@ -334,6 +350,7 @@ void main(){
     };
     const width = Math.max(1, finite(options.width, 896));
     const height = Math.max(1, finite(options.height, 560));
+    const top=finite(options.top,0),bottom=finite(options.bottom,height);
     const speed = Math.max(0, finite(options.speed, 28));
     const gap = Math.max(2, finite(options.gap, 96));
     const rates = options.rates || [1, .86, .72, .9];
@@ -437,7 +454,7 @@ void main(){
       const t=sampleTime(time),amount=amountFor(morph),result=[];
       for(const layer of layers){
         if(layer.weight<=0)continue;
-        const shift=scrollY*cloudParallax[layer.index%cloudParallax.length];
+        const shift=scrollY*(options.uniformScroll?1:cloudParallax[layer.index%cloudParallax.length]);
         const deformation=shapeAt(layer,t,amount);
         const rows=[{y:layer.y,row:0,x:0}];
         // Additional seeded rows start wholly outside the initial viewport.
@@ -446,8 +463,8 @@ void main(){
         const spacing=Math.max(190,layer.extentY*.80),margin=layer.extentY+32;
         for(const sign of [-1,1]){
           const origin=sign<0?-margin:height+margin;
-          const a=(-layer.extentY-2-shift-origin)/(sign*spacing);
-          const b=(height+layer.extentY+2-shift-origin)/(sign*spacing);
+          const a=(top-layer.extentY-2-shift-origin)/(sign*spacing);
+          const b=(bottom+layer.extentY+2-shift-origin)/(sign*spacing);
           const lo=Math.max(0,Math.ceil(Math.min(a,b))),hi=Math.floor(Math.max(a,b));
           for(let i=lo;i<=hi;i++){
             const row=sign*(i+1);
@@ -457,7 +474,7 @@ void main(){
         }
         for(const row of rows){
           const y=row.y+shift;
-          if(y+layer.extentY< -2||y-layer.extentY>height+2)continue;
+          if(y+layer.extentY<top-2||y-layer.extentY>bottom+2)continue;
           const raw=layer.x+row.x+layer.velocity*t,cycle=Math.floor(raw/period),phase=raw-cycle*period;
           const first=Math.ceil((-2-layer.extentX-phase)/period),last=Math.floor((width+2+layer.extentX-phase)/period);
           for(let copy=first;copy<=last;copy++)result.push({layer,x:phase+copy*period,y,row:row.row,copyIndex:copy-cycle,deformation});
@@ -466,7 +483,7 @@ void main(){
       return result;
     };
     const instances=(time,morph=1,scrollY=0)=>recordsAt(time,morph,scrollY).map(({layer,x,y,row,copyIndex,deformation})=>({
-      layer:layer.index,copyIndex,row,x,y,vx:layer.velocity,parallax:cloudParallax[layer.index%cloudParallax.length],
+      layer:layer.index,copyIndex,row,x,y,vx:layer.velocity,parallax:options.uniformScroll?1:cloudParallax[layer.index%cloudParallax.length],
       rotation:layer.rotation,sx:layer.sx,sy:layer.sy,weight:layer.weight,
       extentX:layer.extentX,extentY:layer.extentY,minimumPointVX:layer.minimumPointVX,deformation
     }));
@@ -488,10 +505,10 @@ void main(){
   rebuildWatercolor();
   const [paper,pg]=surface();
   function rebuildPaper(){
-    paper.width=W;paper.height=H;const pr=rng(1024),pixels=pg.createImageData(W,H);
+    paper.width=W;paper.height=renderHeight;const pr=rng(1024),pixels=pg.createImageData(W,renderHeight);
     for(let i=0;i<pixels.data.length;i+=4){const v=pr()<.11?249+Math.floor(pr()*6):255;pixels.data[i]=v;pixels.data[i+1]=v;pixels.data[i+2]=v;pixels.data[i+3]=255;}
     pg.putImageData(pixels,0,0);pg.strokeStyle='rgba(45,48,50,.026)';pg.lineWidth=.45;
-    for(let i=0;i<2500*H/560;i++){const x=pr()*W,y=pr()*H;pg.beginPath();pg.moveTo(x,y);pg.lineTo(x+pr()*3,y+(pr()-.5)*1.3);pg.stroke();}
+    for(let i=0;i<2500*renderHeight/560;i++){const x=pr()*W,y=pr()*renderHeight;pg.beginPath();pg.moveTo(x,y);pg.lineTo(x+pr()*3,y+(pr()-.5)*1.3);pg.stroke();}
   }
   rememberAsset(paper,rebuildPaper);
   const atlas=[];
@@ -557,12 +574,12 @@ void main(){
   function scrollBlurSeconds(){return settings.scrollWind?settings.scrollBlur/60:0;}
   function extraScrollTrace(p,f){
     const seconds=scrollBlurSeconds();if(!seconds)return 0;
-    const velocity=isCameraScrollMode()?-scrollExposureVelocity*CAMERA.focal/p.z:
+    const velocity=isCameraScrollMode()?-scrollExposureVelocity*CAMERA.focal/(isBufferedScroll()?6:p.z):
       f.fall*settings.speed*(compact?1.25:1)*scrollSpeedFactor()*CAMERA.focal/p.z;
     const trace=velocity*seconds;return Math.abs(trace)<.015?0:trace;
   }
   function cloudScrollTrace(){
-    const trace=settings.scrollClouds?scrollCloudVelocity*scrollBlurSeconds():0;
+    const trace=settings.scrollClouds||isBufferedScroll()?scrollCloudVelocity*scrollBlurSeconds():0;
     return Math.abs(trace)<.015?0:trace;
   }
   function scrollEffectKey(){
@@ -589,6 +606,7 @@ void main(){
   let captureOrigin=0,captureIndex=0,captureCount=0,historyValid=false,historyTime=-1,displayedAt=0;
   let presentationCount=0,captureReady=false,transitionReady=false,latestCaptureTime=0,previousCaptureTime=0,screenBlend=1;
   let lastSnowFrame=null,lastFilmTime=0,lastFilmSeed=0;
+  let frameScrollTop=0,frameCamera=0;
   let presentationTime=NaN,presentationPoses=[];
   let latestParticles=new Map(),previousParticles=new Map();
   let displayPose={x:0,y:0,angle:0,zoom:1};
@@ -674,22 +692,23 @@ void main(){
     previousScrollTop=top;
     lastScrollEventMs=now;
     if(!settings.scrollWind||paused||suspended||document.hidden||!visible)return;
-    // A resumed page, hash navigation or browser-back jump must not create a gust.
+    // Legacy modes ignore discontinuous page jumps. Buffered framing also
+    // absorbs those jumps because its displayed layer follows native scroll.
     if(!Number.isFinite(delta)||!Number.isFinite(gap)||gap<0)return;
     const limit=Math.max(1200,scrollViewportHeight(scrollContainer)*1.8);
-    if(Math.abs(delta)>limit){scrollIgnored++;return;}
+    if(Math.abs(delta)>limit&&!isBufferedScroll()){scrollIgnored++;return;}
     // No per-event, accumulated-impulse, or positive velocity ceiling.
-    // Large discontinuous jumps are still filtered above, but ordinary wheel
-    // and trackpad gestures remain proportional to their actual travel.
+    // Wheel and trackpad gestures remain proportional to their actual travel.
     if(isCameraScrollMode()){
       // Default: downward page scroll moves the view downward, snow upward.
-      // cameraSame: reverse the simulated camera displacement so snow follows
-      // the scroll direction. Both retain continuous inverse-z parallax.
-      const direction=settings.scrollMode==='cameraSame'?-1:1;
+      // Legacy cameraSame reverses that displacement. Buffered photographs
+      // always follow native page movement as one uniform 2D plane.
+      const direction=isBufferedScroll()?1:settings.scrollMode==='cameraSame'?-1:1;
       // Convert CSS scroll pixels to this canvas's logical camera units.
       const pixelScale=W/Math.max(1,cssWidth);
-      scrollCameraGoal+=direction*delta*pixelScale*(6/CAMERA.focal)*0.72*settings.scrollStrength;
-      if(delta!==0&&settings.scrollStrength>0){
+      const strength=isBufferedScroll()?1:.72*settings.scrollStrength;
+      scrollCameraGoal+=direction*delta*pixelScale*(6/CAMERA.focal)*strength;
+      if(delta!==0&&strength>0){
         if(!scrollCameraDirty)scrollInputMs=now;
         scrollCameraDirty=true;
       }
@@ -698,7 +717,10 @@ void main(){
       // In speed mode, reversals must not cancel separate acceleration gestures.
       scrollMagnitudeImpulse+=Math.abs(delta)*1.5;
     }
-    if(settings.scrollClouds&&settings.scrollCloudStrength>0){
+    if(isBufferedScroll()){
+      // The native scroll layer moves the complete photograph at 1:1 speed.
+      pendingCloudY-=delta*(W/Math.max(1,cssWidth));
+    }else if(settings.scrollClouds&&settings.scrollCloudStrength>0){
       const signed=settings.scrollMode==='camera'?-delta:
         settings.scrollMode==='speed'&&settings.scrollBothDirections?Math.abs(delta):delta;
       pendingCloudY+=signed*(W/Math.max(1,cssWidth))*.72*settings.scrollCloudStrength;
@@ -725,13 +747,22 @@ void main(){
     scrollExposureVelocity=step/scrollFrameSeconds(now);
     for(const f of flakes){
       if(!snowIsActive(f))continue;
-      f.y-=step;
+      f.y-=step*(isBufferedScroll()?projectParticle(f).z/6:1);
       recycleReservoir(f,projectParticle(f),true);
     }
-    // Stored poses belong to the held film frame. Translate them at their own
-    // depths; neither its animation time nor its exposure mixture is changed.
+    // Held poses keep their own depth in legacy modes, and share a screen-space
+    // translation in buffered mode. Their time and exposure mixture stay held.
     historyValid=false;transitionReady=false;
     return true;
+  }
+  function syncBufferedScroll(){
+    if(!isBufferedScroll()||paused||suspended||document.hidden||!visible)return false;
+    // A native scroll can reach the compositor before its scroll event. Sample
+    // the actual position before taking a photograph, then anchor that image.
+    if(scrollPosition(scrollContainer)!==previousScrollTop)onPageScroll();
+    const now=window.performance?.now?.()??Date.now(),changed=applyScrollCamera(now);
+    const clouds=updateScrollEffects(now,changed);
+    return changed||clouds;
   }
   function particleSupport(p){return p.size*4+p.coc*2+24;}
   function inward(p,side){return side==='top'?p.vy:side==='bottom'?-p.vy:side==='left'?p.vx:-p.vx;}
@@ -996,7 +1027,7 @@ void main(){
     const x=f.x+f.vx*stateOffset+Math.sin(t*f.flutter+f.phase)*f.flutterAmp;
     // Treat camera motion as a real velocity over the short shutter interval.
     // Long lookahead samples must not extrapolate an already-decaying impulse.
-    const cameraVy=Math.abs(stateOffset)<.21&&settings.scrollWind&&isCameraScrollMode()?scrollCameraVelocity:0;
+    const cameraVy=Math.abs(stateOffset)<.21&&settings.scrollWind&&isCameraScrollMode()?scrollCameraVelocity*(isBufferedScroll()?z/6:1):0;
     const y=f.y+f.vy*stateOffset-(cameraExposure?cameraVy*offset:0)+Math.sin(t*.7+f.phase)*.018;
     const vx=f.vx+Math.cos(t*f.flutter+f.phase)*f.flutter*f.flutterAmp;
     const vy=f.vy-cameraVy+Math.cos(t*.7+f.phase)*.0126;
@@ -1047,7 +1078,7 @@ void main(){
   }
   function drawBackground(){
     clearBackdrop(ctx);
-    ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.fillStyle=settings.backgroundColor;ctx.fillRect(0,0,W,H);
+    ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.fillStyle=settings.backgroundColor;ctx.fillRect(0,renderTop,W,renderHeight);
     const trace=cloudScrollTrace();cloudBlurPasses=0;
     if(Math.abs(trace)<.25){
       watercolorDrift.draw(ctx,backgroundTime,settings.cloudMorph,scrollCloudY);
@@ -1058,14 +1089,14 @@ void main(){
       cloudExposureContext.setTransform(1,0,0,1,0,0);cloudExposureContext.clearRect(0,0,cloudExposure.width,cloudExposure.height);
       cloudExposureContext.globalCompositeOperation='lighter';
       for(let i=0;i<nodes.length;i++){
-        cloudSampleContext.setTransform(scale,0,0,scale,0,0);cloudSampleContext.globalAlpha=1;
+        cloudSampleContext.setTransform(scale,0,0,scale,0,-renderTop*scale);cloudSampleContext.globalAlpha=1;
         cloudSampleContext.globalCompositeOperation='source-over';cloudSampleContext.fillStyle=settings.backgroundColor;
-        cloudSampleContext.fillRect(0,0,W,H);
+        cloudSampleContext.fillRect(0,renderTop,W,renderHeight);
         watercolorDrift.draw(cloudSampleContext,backgroundTime,settings.cloudMorph,scrollCloudY+trace*nodes[i]);
         cloudExposureContext.globalAlpha=weights[i];cloudExposureContext.drawImage(cloudSample,0,0);cloudBlurPasses++;
       }
       cloudExposureContext.globalAlpha=1;cloudExposureContext.globalCompositeOperation='source-over';
-      ctx.drawImage(cloudExposure,0,0,W,H);
+      ctx.drawImage(cloudExposure,0,renderTop,W,renderHeight);
     }
     backgroundShownPhase=backgroundTime;
   }
@@ -1226,7 +1257,7 @@ function compactSpriteBasis(p,motion){
       this.lastStampCount=0;this.lastKernelCount=0;
     }
     resize(outputWidth){
-      const width=Math.max(320,Math.min(1024,Math.round(outputWidth),Math.floor(Math.sqrt(650000*W/H)))),height=Math.round(width*H/W);
+      const width=Math.max(320,Math.min(1024,Math.round(outputWidth),Math.floor(Math.sqrt(650000*W/renderHeight)))),height=Math.round(width*renderHeight/W);
       if(width===this.width&&height===this.height)return;
       this.width=width;this.height=height;this.scale=width/W;
       this.layers=Array.from({length:this.count},()=>new Float32Array(width*height));
@@ -1258,7 +1289,7 @@ function compactSpriteBasis(p,motion){
       // Expanding the support for defocus changes area, never the supplied ink mass.
       const s=grid?grid.scale:this.scale,c=Math.cos(angle),sn=Math.sin(angle);
       const width=grid?grid.width:this.width,height=grid?grid.height:this.height;
-      x=(x-(grid?grid.x:0))*s-.5;y=(y-(grid?grid.y:0))*s-.5;rx*=s;ry*=s;
+      x=(x-(grid?grid.x:0))*s-.5;y=(y-(grid?grid.y:renderTop))*s-.5;rx*=s;ry*=s;
       const ix=1/(rx*rx),iy=1/(ry*ry),amplitude=mass*s*s/(rx*ry);
       const extentX=Math.sqrt(rx*rx*c*c+ry*ry*sn*sn),extentY=Math.sqrt(rx*rx*sn*sn+ry*ry*c*c);
       const x0=Math.max(0,Math.ceil(x-extentX)),x1=Math.min(width-1,Math.floor(x+extentX));
@@ -1327,7 +1358,7 @@ function compactSpriteBasis(p,motion){
       if(!snowIsActive(f))continue;
       const center=projectParticle(f),blur=blurFor(f,center);
       const margin=center.size*3+blur.trace*.6+24;
-      if(!includeOffscreen&&(center.x< -margin||center.x>W+margin||center.y< -margin||center.y>H+margin))continue;
+      if(!includeOffscreen&&(center.x< -margin||center.x>W+margin||center.y<renderTop-margin||center.y>renderTop+renderHeight+margin))continue;
       const density=-Math.log(1-Math.min(.985,f.alpha*.985));
       const common={id:f.id,generation:f.generation,center,density,phase:f.phase};
       for(const sample of motionSamples(f,center,blur))stamps.push({...common,...sample});
@@ -1462,10 +1493,12 @@ function compactSpriteBasis(p,motion){
           camera:scrollCameraApplied,wrapX:f.wrapX||0,wrapY:f.wrapY||0};
       }
       const dx=(f.wrapX||0)-(shown.wrapX||0);
-      const dy=(f.wrapY||0)-(shown.wrapY||0)-(scrollCameraApplied-(shown.camera??scrollCameraApplied));
+      const camera=scrollCameraApplied-(shown.camera??scrollCameraApplied);
+      const dy=(f.wrapY||0)-(shown.wrapY||0)-(isBufferedScroll()?0:camera);
       const p=dx===0&&dy===0?shown.pose:{...shown.pose,
         x:shown.pose.x+dx*CAMERA.focal/shown.pose.z,y:shown.pose.y+dy*CAMERA.focal/shown.pose.z};
-      stamps.push({id:f.id,generation:shown.generation,p,center:p,weight:1,
+      const center=isBufferedScroll()&&camera!==0?{...p,y:p.y-camera*CAMERA.focal/6}:p;
+      stamps.push({id:f.id,generation:shown.generation,p:center,center,weight:1,
         density:-Math.log(1-Math.min(.985,f.alpha*.985)),phase:f.phase});
     }
     return{stamps,weights:shortWeights,time:presentationTime};
@@ -1669,7 +1702,7 @@ function compactSpriteBasis(p,motion){
         top=Math.min(top,k[1]-ey);bottom=Math.max(bottom,k[1]+ey);
       }
       const spanX=right-left,spanY=bottom-top;
-      if(!complete&&(pose.x+spanX<0||pose.y+spanY<0||pose.x-spanX>W||pose.y-spanY>H))return{x:0,y:0,deferred:true};
+      if(!complete&&(pose.x+spanX<0||pose.y+spanY<renderTop||pose.x-spanX>W||pose.y-spanY>renderTop+renderHeight))return{x:0,y:0,deferred:true};
       // Measure the complete combined mark, before viewport clipping. The
       // local grid follows the particle, so registration itself cannot snap
       // when the particle crosses a screen pixel boundary.
@@ -1710,18 +1743,18 @@ function compactSpriteBasis(p,motion){
             return [k[0],k[1],Math.sqrt(Math.max(1e-10,(sum+d)/2)),Math.sqrt(Math.max(1e-10,(sum-d)/2)),.5*Math.atan2(2*xy,xx-yy),k[5]];
           })}));
           const margin=p.size*12+length*1.1+32;
-          const visible=p.x>-margin&&p.x<W+margin&&p.y>-margin&&p.y<H+margin;
+          const visible=p.x>-margin&&p.x<W+margin&&p.y>renderTop-margin&&p.y<renderTop+renderHeight+margin;
           // Re-register optical ink too, not just geometry. Blur changes must
           // not move the perceived center of an asymmetric, saturated mark.
           offset=visible?this.visibleOffset(groups,cache.pose,true):cache.offset;
           cache.scrollBlur={length,groups,offset,measured:visible};
         }else{
           ({groups,offset}=cache.scrollBlur);
-          if(!cache.scrollBlur.measured&&p.x> -p.size*12-length&&p.x<W+p.size*12+length&&p.y> -p.size*12-length&&p.y<H+p.size*12+length){
+          if(!cache.scrollBlur.measured&&p.x> -p.size*12-length&&p.x<W+p.size*12+length&&p.y>renderTop-p.size*12-length&&p.y<renderTop+renderHeight+p.size*12+length){
             offset=this.visibleOffset(groups,cache.pose,true);cache.scrollBlur.offset=offset;cache.scrollBlur.measured=true;
           }
         }
-      }else if(offset.deferred&&p.x>-p.size*12&&p.x<W+p.size*12&&p.y>-p.size*12&&p.y<H+p.size*12){
+      }else if(offset.deferred&&p.x>-p.size*12&&p.x<W+p.size*12&&p.y>renderTop-p.size*12&&p.y<renderTop+renderHeight+p.size*12){
         offset=cache.offset=this.visibleOffset(groups,cache.pose,true);
       }
       for(let index=0;index<this.count;index++){
@@ -1921,11 +1954,11 @@ function compactSpriteBasis(p,motion){
       // physics state. Older held film ticks reuse that phase; new ticks move
       // forward from the edit time without extrapolating the new rate backward.
       backgroundTime=backgroundRatePhase+Math.max(0,filmSampleTime-backgroundRateTime)*settings.background;
-      ctx=backgroundContext;const scale=canvas.width/W;ctx.setTransform(scale,0,0,scale,0,0);drawBackground();
+      ctx=backgroundContext;const scale=canvas.width/W;ctx.setTransform(scale,0,0,scale,0,-renderTop*scale);drawBackground();
       if(settings.finish==='watercolor'||settings.finish==='combined')shaderFinish.apply('wash',backgroundFrame,backgroundContext,backgroundTime);
       backgroundTime=savedTime;ctx=savedCtx;backgroundCacheKey=key;backgroundCaptureCount++;
     }
-    ctx.drawImage(backgroundFrame,0,0,W,H);
+    ctx.drawImage(backgroundFrame,0,renderTop,W,renderHeight);
   }
   function drawPhysics(){
     const unit=W/cssWidth;
@@ -1933,7 +1966,7 @@ function compactSpriteBasis(p,motion){
     for(const f of flakes){
       const presence=snowPresence(f);if(presence<=0)continue;
       ctx.globalAlpha=settings.opacity*presence;
-      const p=projectParticle(f);if(p.x< -20||p.x>W+20||p.y< -20||p.y>H+20)continue;
+      const p=projectParticle(f);if(p.x< -20||p.x>W+20||p.y<renderTop-20||p.y>renderTop+renderHeight+20)continue;
       ctx.beginPath();ctx.arc(p.x,p.y,Math.max(1.25*unit,p.size*.12),0,TAU);ctx.fill();
     }
     ctx.restore();
@@ -1945,7 +1978,7 @@ function compactSpriteBasis(p,motion){
     const frame=currentShortFrame(reproject);
     if(reproject&&timeline.reprojectFrame(frame)){
       const image=fields.shade(settings.opacity,settings.layer);
-      ctx.save();ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.drawImage(image,0,0,W,H);ctx.restore();return;
+      ctx.save();ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.drawImage(image,0,renderTop,W,renderHeight);ctx.restore();return;
     }
     if(isStaggered()){
       ensureLayerSchedule();
@@ -1958,7 +1991,7 @@ function compactSpriteBasis(p,motion){
     }
     timeline.setShortFrame(frame,settings,frame.time);timeline.refreshTotal();
     const image=fields.shade(settings.opacity,settings.layer);
-    ctx.save();ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.drawImage(image,0,0,W,H);ctx.restore();
+    ctx.save();ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.drawImage(image,0,renderTop,W,renderHeight);ctx.restore();
   }
   function drawSpriteSnow(filter=null,targetCtx=ctx,targetScale=canvas.width/W,poseMap=null){
     if(settings.opacity<=0)return;
@@ -1967,7 +2000,7 @@ function compactSpriteBasis(p,motion){
     for(const f of order){
       const presence=snowPresence(f);
       const center=(poseMap&&poseMap.get(f.id))||projectParticle(f);
-      const edge=Math.max(0,Math.min(1,(center.y+50)/50,(H+50-center.y)/50,(center.x+50)/50,(W+50-center.x)/50));
+      const edge=Math.max(0,Math.min(1,(center.y-renderTop+50)/50,(renderTop+renderHeight+50-center.y)/50,(center.x+50)/50,(W+50-center.x)/50));
       if(!edge)continue;
       const sprite=focusedSprite(f,center),size=center.size*sprite.span;
       const blur=blurFor(f,center);
@@ -1999,7 +2032,7 @@ function compactSpriteBasis(p,motion){
         tg.setTransform(1,0,0,1,0,0);tg.globalAlpha=1;tg.globalCompositeOperation='source-over';
         targetCtx.save();targetCtx.setTransform(1,0,0,1,0,0);targetCtx.globalAlpha=f.alpha*edge*settings.opacity*presence;
         targetCtx.drawImage(tile,tileCenter-half,tileCenter-half,half*2,half*2,
-          center.x*scale-half,center.y*scale-half,half*2,half*2);targetCtx.restore();
+          center.x*scale-half,(center.y-renderTop)*scale-half,half*2,half*2);targetCtx.restore();
         continue;
       }
       if(blur.haloMix<=1e-8){
@@ -2025,7 +2058,7 @@ function compactSpriteBasis(p,motion){
       tg.drawImage(sprite.image,-drawSize/2,-drawSize/2,drawSize,drawSize);
       tg.globalAlpha=1;tg.globalCompositeOperation='source-over';
       targetCtx.save();targetCtx.setTransform(1,0,0,1,0,0);targetCtx.globalAlpha=f.alpha*edge*settings.opacity*presence;
-      targetCtx.drawImage(tile,tileCenter-half,tileCenter-half,half*2,half*2,center.x*scale-half,center.y*scale-half,half*2,half*2);targetCtx.restore();
+      targetCtx.drawImage(tile,tileCenter-half,tileCenter-half,half*2,half*2,center.x*scale-half,(center.y-renderTop)*scale-half,half*2,half*2);targetCtx.restore();
     }
   }
   function isForegroundParticle(f,p){
@@ -2045,7 +2078,7 @@ function compactSpriteBasis(p,motion){
     foregroundScreen.clearRect(0,0,foregroundCanvas.width,foregroundCanvas.height);
     if(!captureReady)return;
     const scale=foregroundCanvas.width/W;
-    foregroundScreen.setTransform(scale,0,0,scale,0,0);
+    foregroundScreen.setTransform(scale,0,0,scale,0,-renderTop*scale);
     drawSpriteSnow((f,p)=>isForegroundParticle(f,p),foregroundScreen,scale,displayedParticles);
     foregroundScreen.setTransform(1,0,0,1,0,0);
   }
@@ -2089,6 +2122,8 @@ function compactSpriteBasis(p,motion){
   }
   function render(force=false,reproject=false){
     const renderStart=window.performance.now();
+    syncBufferedScroll();
+    const scrollTop=scrollPosition(scrollContainer);
     clearBackdrop(sceneContext);
     const scale=canvas.width/W;
     const staggered=isStaggered();
@@ -2096,14 +2131,14 @@ function compactSpriteBasis(p,motion){
       previousContext.setTransform(1,0,0,1,0,0);previousContext.globalAlpha=1;previousContext.drawImage(filmFrame,0,0);
       previousParticles=latestParticles;previousCaptureTime=latestCaptureTime;transitionReady=true;
     }else transitionReady=false;
-    ctx=sceneContext;ctx.setTransform(scale,0,0,scale,0,0);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';
+    ctx=sceneContext;ctx.setTransform(scale,0,0,scale,0,-renderTop*scale);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';
     if(staggered)drawCachedBackground();
     else{
       drawBackground();
       if(settings.finish==='watercolor'||settings.finish==='combined')shaderFinish.apply('wash',scene,sceneContext,backgroundTime);
     }
     ctx=snowContext;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,snow.width,snow.height);
-    ctx.setTransform(scale,0,0,scale,0,0);drawSnow(reproject);
+    ctx.setTransform(scale,0,0,scale,0,-renderTop*scale);drawSnow(reproject);
     // Field history is blended above as registered shapes. Blending old
     // screen images here would put the same flake at two different positions.
     const look=looks[settings.look],mix=settings.renderer==='field'?0:look.mix*settings.film*(settings.temporal==='soft'?.5:1);
@@ -2117,8 +2152,8 @@ function compactSpriteBasis(p,motion){
       blendContext.globalAlpha=1;blendContext.globalCompositeOperation='source-over';snowFrame=blend;
     }
     lastSnowFrame=snowFrame;
-    ctx=sceneContext;ctx.setTransform(scale,0,0,scale,0,0);ctx.globalAlpha=1;ctx.drawImage(colorSnow(snowFrame),0,0,W,H);
-    ctx.globalCompositeOperation='multiply';ctx.globalAlpha=.5;ctx.drawImage(paper,0,0);
+    ctx=sceneContext;ctx.setTransform(scale,0,0,scale,0,-renderTop*scale);ctx.globalAlpha=1;ctx.drawImage(colorSnow(snowFrame),0,renderTop,W,renderHeight);
+    ctx.globalCompositeOperation='multiply';ctx.globalAlpha=.5;ctx.drawImage(paper,0,renderTop);
     ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
     if(mix>0){
       historyContext.setTransform(1,0,0,1,0,0);historyContext.clearRect(0,0,history.width,history.height);historyContext.drawImage(snow,0,0);
@@ -2139,6 +2174,7 @@ function compactSpriteBasis(p,motion){
         shortExposure:shortWeight,blur:blurFor(f,p).length*(1-shortWeight)});
     }
     latestCaptureTime=settings.renderer==='field'&&Number.isFinite(presentationTime)?presentationTime:elapsed;captureReady=true;
+    frameScrollTop=Number.isFinite(scrollTop)?scrollTop:0;frameCamera=scrollCameraApplied;
     renderedScrollEffects=scrollEffectKey();
     if(reproject)scrollReprojectionCount++;else captureCount++;
     lastRenderMs=window.performance.now()-renderStart;renderTotalMs+=lastRenderMs;renderSamples++;
@@ -2161,9 +2197,10 @@ function compactSpriteBasis(p,motion){
       displayedParticles.set(id,p);
     }
     displayedAt=smoothing?previousCaptureTime+(latestCaptureTime-previousCaptureTime)*screenBlend:latestCaptureTime;
-    ctx=screen;ctx.save();const scale=canvas.width/W;ctx.setTransform(scale,0,0,scale,0,0);drawObservation(force);ctx.restore();ctx=sceneContext;
+    ctx=screen;ctx.save();const scale=canvas.width/W;ctx.setTransform(scale,0,0,scale,0,-renderTop*scale);drawObservation(force);ctx.restore();ctx=sceneContext;
     drawForegroundOverlay();
     presentationCount++;
+    options.onPresent?.({scrollTop:frameScrollTop,padding:renderPadding*cssWidth/W,paused});
   }
   function applyFilmPose(g){
     const p=displayPose;g.translate(W/2+p.x,H/2+p.y);g.rotate(p.angle);g.scale(p.zoom,p.zoom);g.translate(-W/2,-H/2);
@@ -2182,9 +2219,9 @@ function compactSpriteBasis(p,motion){
       y:weave*(Math.sin(frameTime*2.9+.6)*.35+Math.sin(frameTime*1.41+.9)*.14),
       angle:weave*.00032*Math.sin(frameTime*2.3),zoom:1+weave*.006};
     output.setTransform(1,0,0,1,0,0);output.globalAlpha=1;output.globalCompositeOperation='source-over';output.fillStyle=settings.backgroundColor;output.fillRect(0,0,canvas.width,canvas.height);
-    output.save();output.setTransform(scale,0,0,scale,0,0);applyFilmPose(output);output.drawImage(scene,0,0,W,H);output.restore();
-    output.save();output.setTransform(scale,0,0,scale,0,0);
-    if(appearance.warm){output.globalCompositeOperation='multiply';output.globalAlpha=appearance.warm;output.fillStyle='#eedcbd';output.fillRect(0,0,W,H);}
+    output.save();output.setTransform(scale,0,0,scale,0,-renderTop*scale);applyFilmPose(output);output.drawImage(scene,0,renderTop,W,renderHeight);output.restore();
+    output.save();output.setTransform(scale,0,0,scale,0,-renderTop*scale);
+    if(appearance.warm){output.globalCompositeOperation='multiply';output.globalAlpha=appearance.warm;output.fillStyle='#eedcbd';output.fillRect(0,renderTop,W,renderHeight);}
     if(appearance.vignette){
       // An image-space ellipse, not a width-sized circle cropped by a portrait.
       // Even the strongest vintage preset reaches only a soft corner shading.
@@ -2195,13 +2232,13 @@ function compactSpriteBasis(p,motion){
       gradient.addColorStop(.75,'rgba(17,25,32,.16)');
       gradient.addColorStop(1,'rgba(17,25,32,.5)');
       output.globalCompositeOperation='source-over';output.globalAlpha=appearance.vignette;
-      output.fillStyle=gradient;output.fillRect(-1,-1,2,2);output.restore();
+      output.fillStyle=gradient;output.fillRect(-1,-1+2*renderTop/H,2,2*renderHeight/H);output.restore();
     }
     if(appearance.flicker){
       // Keep the film's mean tint without pulsing the entire photograph.
       const value=.6*appearance.flicker;
       r(); // Preserve the existing frame seed sequence for unsmoothed grain.
-      output.globalCompositeOperation='source-over';output.globalAlpha=value;output.fillStyle='#25282b';output.fillRect(0,0,W,H);
+      output.globalCompositeOperation='source-over';output.globalAlpha=value;output.fillStyle='#25282b';output.fillRect(0,renderTop,W,renderHeight);
     }
     output.restore();
     if(appearance.grain>0){
@@ -2214,6 +2251,8 @@ function compactSpriteBasis(p,motion){
     output.globalAlpha=1;output.globalCompositeOperation='source-over';
   }
   function redrawBackgroundAppearance(){
+    syncBufferedScroll();
+    if(isBufferedScroll()&&frameCamera!==scrollCameraApplied){render(false,true);presentOutput(elapsed,true);return;}
     clearBackdrop(sceneContext);
     if(!captureReady||!lastSnowFrame){render(true);return;}
     // Background controls edit the held photograph. Reuse the exact snow
@@ -2224,12 +2263,12 @@ function compactSpriteBasis(p,motion){
     const frameTime=lastFilmTime,frameSeed=lastFilmSeed;
     try{
       backgroundTime=heldPhase;ctx=backgroundContext;
-      ctx.setTransform(scale,0,0,scale,0,0);drawBackground();
+      ctx.setTransform(scale,0,0,scale,0,-renderTop*scale);drawBackground();
       if(settings.finish==='watercolor'||settings.finish==='combined')shaderFinish.apply('wash',backgroundFrame,backgroundContext,heldPhase);
       backgroundCaptureCount++;
-      ctx=sceneContext;ctx.setTransform(scale,0,0,scale,0,0);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';
-      ctx.drawImage(backgroundFrame,0,0,W,H);ctx.drawImage(colorSnow(lastSnowFrame),0,0,W,H);
-      ctx.globalCompositeOperation='multiply';ctx.globalAlpha=.5;ctx.drawImage(paper,0,0);
+      ctx=sceneContext;ctx.setTransform(scale,0,0,scale,0,-renderTop*scale);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';
+      ctx.drawImage(backgroundFrame,0,renderTop,W,renderHeight);ctx.drawImage(colorSnow(lastSnowFrame),0,renderTop,W,renderHeight);
+      ctx.globalCompositeOperation='multiply';ctx.globalAlpha=.5;ctx.drawImage(paper,0,renderTop);
       ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
       if(settings.renderer!=='particles'&&(settings.finish==='diffusion'||settings.finish==='combined')&&settings.diffusion>0)shaderFinish.apply('lens',scene,sceneContext,heldPhase);
       presentFrame(looks[settings.look],frameTime,frameSeed);
@@ -2239,6 +2278,8 @@ function compactSpriteBasis(p,motion){
     presentOutput(elapsed,true);
   }
   function redrawFilmAppearance(){
+    syncBufferedScroll();
+    if(isBufferedScroll()&&frameCamera!==scrollCameraApplied){render(false,true);presentOutput(elapsed,true);return;}
     if(!captureReady){render(true);return;}
     const before=displayPose;
     presentFrame(looks[settings.look],isStaggered()?filmSampleTime:latestCaptureTime);
@@ -2295,7 +2336,7 @@ function compactSpriteBasis(p,motion){
     }
     // Background integrations can retain the configured film cadence during
     // scrolling. Camera/cloud deltas still accumulate on every display frame.
-    const scrollFrameDue=options.scrollFrameRate!=='capture'||settings.fps<=0;
+    const scrollFrameDue=(options.scrollFrameRate!=='capture'&&!buffered)||settings.fps<=0;
     if(scrollFrameDue&&(cameraChanged||cloudChanged||renderedScrollEffects!==scrollEffectKey())&&!captured){render(false,true);captured=true;}
     if(captured||(!isStaggered()&&settings.temporal==='soft'&&settings.fps>0&&transitionReady))presentOutput(elapsed);
     if(cameraChanged&&Number.isFinite(scrollInputMs))lastScrollResponseMs=window.performance.now()-scrollInputMs;
@@ -2438,12 +2479,21 @@ function compactSpriteBasis(p,motion){
     if(next===H)return false;
     const old=H;H=next;
     for(const f of flakes)f.y*=H/old;
-    FIELD.height=H+320;rebuildWatercolor();rebuildPaper();
+    FIELD.height=H+320;updateRenderBounds();rebuildWatercolor();rebuildPaper();
     backgroundCacheKey='';captureReady=false;return true;
   }
   function announce(){pause.textContent=paused?'재생':'일시정지';pause.setAttribute('aria-pressed',String(paused));windLeftButton.disabled=paused;windRightButton.disabled=paused;status.textContent=paused?'일시정지':'재생 중';root.dataset.running=String(!paused);options.onPausedChange?.(paused);}
   function resize(){
     if(resizing||destroyed)return false;
+    if(buffered&&settings.aspectMode!=='auto'){
+      // Fixed-aspect canvases use the package's original sizing rules. Remove
+      // a previous auto buffer before measuring that canvas, not afterwards.
+      for(const c of [canvas,foregroundCanvas]){
+        if(!c)continue;
+        c.style.height=c===foregroundCanvas?'100%':'';c.style.top='';c.style.bottom='';
+        if(c===foregroundCanvas)c.style.position='';
+      }
+    }
     const box=(settings.aspectMode==='auto'?stage:canvas).getBoundingClientRect();
     // Preserve backing stores when hidden or frozen. Layout is remeasured on resume.
     if(box.width<2||box.height<2||document.hidden||suspended||lostSurfaces.size){recoveryNeeded=true;return false;}
@@ -2451,11 +2501,20 @@ function compactSpriteBasis(p,motion){
     try{
       const ratio=settings.aspectMode==='auto'?box.width/box.height:settings.aspectWidth/settings.aspectHeight;
       const heightChanged=updateLogicalHeight(Math.max(1,Math.round(W/ratio)));
+      const boundsChanged=updateRenderBounds();
+      if(boundsChanged){rebuildWatercolor();rebuildPaper();}
       root.style.setProperty('--snow-aspect',String(W/H));
-      const width=box.width,dpr=Math.min(1.5,window.devicePixelRatio||1,Math.sqrt(850000*W/H)/width);
+      const width=box.width,dpr=Math.min(1.5,window.devicePixelRatio||1,Math.sqrt(850000*W/renderHeight)/width);
       compact=width<440;cssWidth=width;
-      const pw=Math.max(1,Math.round(width*dpr)),ph=Math.max(1,Math.round(width*H/W*dpr));
-      if(!heightChanged&&canvas.width===pw&&canvas.height===ph&&captureReady){
+      if(buffered&&settings.aspectMode==='auto'){
+        for(const c of [canvas,foregroundCanvas]){
+          if(!c)continue;
+          if(c===foregroundCanvas)c.style.position='relative';
+          c.style.height=(width*renderHeight/W)+'px';c.style.top=(width*renderTop/W)+'px';c.style.bottom='auto';
+        }
+      }
+      const pw=Math.max(1,Math.round(width*dpr)),ph=Math.max(1,Math.round(width*renderHeight/W*dpr));
+      if(!heightChanged&&!boundsChanged&&canvas.width===pw&&canvas.height===ph&&captureReady){
         if(recoveryNeeded&&!recovering)requestRecovery('visible-size');return false;
       }
       for(const f of flakes)f.vy=f.fall*settings.speed*(compact?1.25:1);
@@ -2467,6 +2526,7 @@ function compactSpriteBasis(p,motion){
     }finally{resizing=false;}
   }
   listen(pause,'click',()=>{
+    if(buffered){setPaused(!paused);return;}
     paused=!paused;last=0;historyValid=false;resetScrollMotion();
     if(paused){if(raf){cancelAnimationFrame(raf);raf=0;}presentOutput(elapsed,true);}
     else if(!isStaggered())resetCadence();
@@ -2482,7 +2542,7 @@ function compactSpriteBasis(p,motion){
   listen(canvas,'pointerdown',event=>{
     if(root.dataset.renderOnly==='true'){showViewControls();return;}
     const bounds=canvas.getBoundingClientRect();observing=true;inspect.hidden=false;observeButton.setAttribute('aria-pressed','true');
-    const x=(event.clientX-bounds.left)*W/bounds.width,y=(event.clientY-bounds.top)*H/bounds.height;
+    const x=(event.clientX-bounds.left)*W/bounds.width,y=renderTop+(event.clientY-bounds.top)*renderHeight/bounds.height;
     chooseTracked(x,y,true);
     status.textContent='선택한 눈송이의 깊이와 표시 시점을 확인합니다.';presentOutput(elapsed,true);
   });
@@ -2669,7 +2729,10 @@ function compactSpriteBasis(p,motion){
   listen(document,'freeze',()=>suspendRendering('freeze'));
   listen(document,'resume',()=>resumeRendering('resume'));
   listen(window,'focus',()=>{if(!document.hidden)resumeRendering('focus');});
-  if(reduced.addEventListener)listen(reduced,'change',()=>{paused=reduced.matches;last=0;if(!isStaggered())resetCadence();if(paused&&raf){cancelAnimationFrame(raf);raf=0;}announce();if(paused)presentOutput(elapsed,true);schedule();});
+  if(reduced.addEventListener)listen(reduced,'change',()=>{
+    if(buffered){setPaused(reduced.matches);return;}
+    paused=reduced.matches;last=0;if(!isStaggered())resetCadence();if(paused&&raf){cancelAnimationFrame(raf);raf=0;}announce();if(paused)presentOutput(elapsed,true);schedule();
+  });
   function clearBackdrop(g){
     g.save();g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.globalCompositeOperation='source-over';
     g.fillStyle=settings.backgroundColor;g.fillRect(0,0,g.canvas.width,g.canvas.height);g.restore();
@@ -2706,7 +2769,7 @@ function compactSpriteBasis(p,motion){
       }else assetPainters.get(c)();
       return {...w,image:c,y:w.y*H/560};
     });
-    watercolorDrift=createWatercolorDrift(tinted,{width:W,height:H});
+    watercolorDrift=createWatercolorDrift(tinted,{width:W,height:H,top:renderTop,bottom:renderTop+renderHeight,uniformScroll:isBufferedScroll()});
   }
   function depthStateAt(time){
     const u=Math.max(0,Math.min(1,(time-depthRange.start)/depthRange.duration));
@@ -2783,6 +2846,20 @@ function compactSpriteBasis(p,motion){
   function setPaused(value){
     if(typeof value!=='boolean')return;
     if(paused===value)return;
+    if(buffered){
+      if(value)syncBufferedScroll();
+      paused=value;last=0;
+      if(paused&&raf){cancelAnimationFrame(raf);raf=0;}
+      if(paused){
+        // Keep the photograph's time and exposure selection. Only absorb the
+        // pending page pan before its holder becomes fixed.
+        render(false,true);
+      }else{
+        // Scrolling a paused page does not move its camera on resume.
+        frameScrollTop=scrollPosition(scrollContainer);
+      }
+      resetScrollMotion();announce();presentOutput(elapsed,true);schedule();return;
+    }
     paused=value;last=0;
     resetScrollMotion();
     if(paused&&raf){cancelAnimationFrame(raf);raf=0;}
@@ -2804,7 +2881,7 @@ function compactSpriteBasis(p,motion){
     if(changed.includes('scrollClouds')){pendingCloudY=0;scrollCloudVelocity=0;}
     if(changed.includes('scrollBlur'))backgroundCacheKey='';
     if(changed.some(k=>['zMin','zMax','nearZ'].includes(k)))changeDepthRange();
-    if(changed.some(k=>['aspectMode','aspectWidth','aspectHeight'].includes(k))){
+    if(changed.some(k=>['aspectMode','aspectWidth','aspectHeight'].includes(k))||buffered&&changed.some(k=>['scrollWind','scrollMode'].includes(k))){
       applyLayout();captureReady=false;resize();queueLayout();
     }
     if(changed.includes('washColor'))rebuildWatercolor();
@@ -2876,10 +2953,10 @@ function compactSpriteBasis(p,motion){
       if(!visible){resetScrollMotion();stopAnimation();recoveryNeeded=true;probeAssets=true;}
       else if(!wasVisible){resetScrollMotion();last=0;requestRecovery('intersection');}
       schedule();
-    },{threshold:.01});observer.observe(canvas);observers.push(observer);
+    },{threshold:.01});observer.observe(buffered?stage:canvas);observers.push(observer);
   }
   const resizeObserver=new window.ResizeObserver(queueLayout);
-  resizeObserver.observe(stage);resizeObserver.observe(canvas);observers.push(resizeObserver);
+  resizeObserver.observe(stage);if(!buffered)resizeObserver.observe(canvas);observers.push(resizeObserver);
   listen(window,'resize',queueLayout);listen(window,'orientationchange',queueLayout);
   if(window.visualViewport)listen(window.visualViewport,'resize',queueLayout);
   setScrollContainer(options.scrollContainer||window);
@@ -2899,7 +2976,7 @@ function compactSpriteBasis(p,motion){
     snapshot:()=>canvas.toDataURL('image/png'),
     get canvas(){return canvas;},
     get foregroundCanvas(){return foregroundCanvas;},
-    diagnostics(detail={}){return {aspectMode:settings.aspectMode,readOnly,renderOnly:root.dataset.renderOnly==='true',time:elapsed,width:canvas.width,height:canvas.height,logicalWidth:W,logicalHeight:H,shader:root.dataset.shader,
+    diagnostics(detail={}){return {aspectMode:settings.aspectMode,readOnly,renderOnly:root.dataset.renderOnly==='true',time:elapsed,width:canvas.width,height:canvas.height,logicalWidth:W,logicalHeight:H,renderTop,renderHeight,renderPadding,frameScrollTop,shader:root.dataset.shader,
       active:flakes.filter(f=>snowIsActive(f)).length,lensCohort:flakes.filter(f=>f.lens&&snowIsActive(f)).length,
       nearVisible:flakes.filter(f=>{if(!f.lens||!snowIsActive(f))return false;const p=projectParticle(f);return p.x>=0&&p.x<W&&p.y>=0&&p.y<H;}).length,
       particles:detail.particles===false?undefined:flakes.filter(f=>snowIsActive(f)).map(f=>({id:f.id,generation:f.generation,lens:f.lens,...projectParticle(f)})),

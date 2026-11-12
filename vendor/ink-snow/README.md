@@ -4,12 +4,41 @@ These files originate from the user-provided
 `ink-snow-svelte-scroll-v1.3.5.zip`, under `ink-snow-svelte/src/lib/`.
 The source archive SHA-256 is `fa6cc9f75b37f4b73a4630197f82587444e88e1b50c76aef98a0938487512891`.
 
-The engine has two local patches. The optional mount setting
+The engine has local scroll and recycling patches. The optional mount setting
 `scrollFrameRate: 'capture'` makes scroll redraws follow the configured `fps`.
 It keeps collecting camera and cloud movement on every animation frame, then
 shows the accumulated movement on the next capture. The default remains
 display-rate scroll reprojection, including when no `fps` limit is set. The
-option is also declared in `engine.d.ts`; all other runtime files are unchanged.
+option is also declared in `engine.d.ts`.
+
+`scrollFrameRate: 'buffered'` with `aspectMode: 'auto'` retains the capture cadence
+and renders 128 logical pixels above and below the viewport. Snow, watercolor,
+paper, and film effects cover this buffer. The logical viewport, camera center, particle count, and
+existing birth reservoir are unchanged; backing-store and density-field pixel
+budgets include the extra area. The canvas gets an inline CSS height and top
+offset matching the buffer, so its stage must retain the viewport height and
+allow overflow. A snapshot includes the buffer.
+
+The `onPresent({ scrollTop, padding, paused })` callback runs synchronously after
+the new bitmap is displayed. `scrollTop` is the actual scroll-container position
+sampled for that bitmap, and `padding` is the buffer size on each side in CSS
+pixels. An integration can anchor a native sticky scroll layer to that position
+and clip its travel to the padding until the next capture. The scroll layer can
+then move without a JavaScript scroll handler or another density composition.
+Keep it fixed while paused, and also when `padding === 0`. Pause absorbs pending
+camera movement into one held-time redraw; resume changes the scroll anchor
+without applying travel that occurred while paused.
+
+Buffered camera movement is a uniform 1:1 screen-space pan for the complete
+photograph. Both `camera` and `cameraSame` follow native page movement, and the
+legacy camera/cloud strength settings and individual parallax factors are not
+used. Large page jumps are absorbed into the next framing instead of being
+discarded. With `aspectMode: 'fixed'`, `scrollMode: 'speed'`, or `scrollWind: false`,
+buffered mode falls back to capture behavior and reports zero padding. Switching
+from auto to fixed restores the original canvas sizing and foreground position.
+The legacy `display` and `capture` modes retain their scroll strengths,
+depth/cloud parallax, and jump
+filter.
 
 Natural snow exits use the existing spaced, inward birth-route selector instead
 of repeatedly wrapping an outward-moving particle to the opposite edge. This
@@ -28,7 +57,8 @@ dark palette when the system uses a dark color scheme. The palette updates in
 place when the preference changes. The site also sets `scrollBlur: 0` to avoid
 speed-dependent snow-kernel expansion and five-pass cloud exposure during fast
 scrolling, while retaining the preset's ordinary snow blur. It selects
-`scrollFrameRate: 'capture'` to keep the background at the preset's 12fps.
+`scrollFrameRate: 'buffered'` to keep captures at the preset's 12fps while its
+clipped native scroll layer moves between captures.
 Only `snowAmount` changes with scrolling:
 100% at the top of the document and 25% below it. The engine
 fades individual particles, so this reduces their count without resetting the
@@ -44,6 +74,6 @@ them. They are not invoked by the portfolio. Standalone portfolio previews are
 built by the application's review build, not the engine's viewer export.
 
 To upgrade, replace these runtime files together from the new source archive.
-Reapply or retire the documented recycling and scroll cadence patches and the
-cadence option's declaration.
+Reapply or retire the documented recycling and scroll-buffer patches and their
+option/callback declarations.
 No third-party runtime dependency or network request is required.

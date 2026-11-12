@@ -100,9 +100,8 @@
 	<link rel="canonical" href="https://seorii.page/" />
 </svelte:head>
 
-<SnowBackground paused={snowPaused} />
-
 <div id="top" class="site-shell" lang={language}>
+	<SnowBackground paused={snowPaused} />
 	<a class="skip-link" href="#about">{text.skip}</a>
 	<header class="site-header">
 		<a class="wordmark" href="#top" aria-label="seorii">seorii<span aria-hidden="true">.</span></a>
