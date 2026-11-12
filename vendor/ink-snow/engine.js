@@ -726,23 +726,35 @@ void main(){
     for(const f of flakes){
       if(!snowIsActive(f))continue;
       f.y-=step;
-      recycleReservoir(f,projectParticle(f));
+      recycleReservoir(f,projectParticle(f),true);
     }
     // Stored poses belong to the held film frame. Translate them at their own
     // depths; neither its animation time nor its exposure mixture is changed.
     historyValid=false;transitionReady=false;
     return true;
   }
+  function particleSupport(p){return p.size*4+p.coc*2+24;}
+  function inward(p,side){return side==='top'?p.vy:side==='bottom'?-p.vy:side==='left'?p.vx:-p.vx;}
+  function beforeEntry(p,side){return side==='top'?p.y<0:side==='bottom'?p.y>H:side==='left'?p.x<0:p.x>W;}
   function reservoirBounds(p){
     // The full defocus + shutter footprint must leave the screen before wrap.
-    const support=p.size*4+p.coc*2+24;
+    const support=particleSupport(p);
     const gx=Math.max(210,support),gy=Math.max(160,support);
     return {x:-gx,y:-gy,width:W+2*gx,height:H+2*gy};
   }
-  function recycleReservoir(f,p){
+  function recycleReservoir(f,p,transport=false){
     reservoirChecks++;
+    if(transport){f.inletSide=null;f.nextBirthAt=0;}
     let box=reservoirBounds(p);
-    if(p.x>=box.x&&p.x<box.x+box.width&&p.y>=box.y&&p.y<box.y+box.height)return false;
+    if(p.x>=box.x&&p.x<box.x+box.width&&p.y>=box.y&&p.y<box.y+box.height){
+      f.inletSide=null;f.nextBirthAt=0;return false;
+    }
+    // A large flake starts beyond its entire optical footprint. Let it travel
+    // inward from there instead of immediately treating its new inlet as an exit.
+    if(!transport&&f.inletSide){
+      if(beforeEntry(p,f.inletSide)&&inward(p,f.inletSide)>0)return false;
+      f.inletSide=null;
+    }
     const lens=settings.nearLens&&f.lensRank<settings.nearFraction;
     if(f.lens!==lens){
       // Retain the existing projected position while changing depth class,
@@ -754,6 +766,20 @@ void main(){
       if(!safe){f.lens=old;updateDepth(f,0);return false;}
       f.x+=(p.x-next.x)*next.z/CAMERA.focal;f.y+=(p.y-next.y)*next.z/CAMERA.focal;
       p=projectParticle(f);box=reservoirBounds(p);f.generation++;
+    }
+    if(!transport){
+      // Radial expansion can point outward on both opposite edges. Repeated
+      // modulo wrapping then bounces a flake across the reservoir every tick.
+      // Natural exits need a fresh, inward route; scroll transport stays below.
+      if(elapsed<(f.nextBirthAt||0))return false;
+      if(birthPosition(f,false,p)){
+        f.generation++;f.wrapX=0;f.wrapY=0;
+        reservoirWrapCount++;return true;
+      }
+      // All inlets can temporarily point outward. Wait offscreen for the flow
+      // to change without scanning neighbors on every 120Hz physics step.
+      f.nextBirthAt=elapsed+.25;
+      return false;
     }
     // Modulo transport retains overshoot and the tangential coordinate. Fast
     // scroll therefore fills the newly exposed strip instead of depositing
@@ -773,31 +799,19 @@ void main(){
     const horizons=[0,1.2,2.4],base=horizons.map(t=>projectParticle(f,t));
     const ratios=base.map(p=>base[0].z/p.z);
     const radial=horizons.map((t,i)=>base[i].vz/base[i].z);
-    const neighbors=horizons.map(t=>{
-      // Spacing is geometric: focus, aperture, blur, and film never alter births.
-      const list=[],rows=new Map();let maxBody=0;
-      for(const other of flakes)if(other!==f&&snowIsActive(other)){
-        const p=projectParticle(other,t),body=1.05*p.baseSize,index=list.length;
-        list.push(p.x,p.y,body);maxBody=Math.max(maxBody,body);
-        const x=Math.floor(p.x/128),y=Math.floor(p.y/128);
-        if(!rows.has(x))rows.set(x,new Map());
-        const row=rows.get(x);if(!row.has(y))row.set(y,[]);row.get(y).push(index);
-      }
-      return{list,rows,maxBody};
-    });
+    let neighbors=null;
+    const extra=Math.max(0,particleSupport(base[0])-120);
     const preferred=!exit?'top':exit.y>=FIELD.y+FIELD.height?'top':exit.y<FIELD.y?'bottom':
       exit.x>=FIELD.x+FIELD.width?'left':'right';
     const sidePoint=side=>{
       // The outer part of the reservoir keeps roughly 120 visible flakes;
       // broad tangential choices avoid feeding a narrow lane into the scene.
-      const along=r(),padding=2+r()*18,extra=f.lens?Math.max(0,Math.max(...base.map(p=>p.size*2.5+p.coc*2))-120):0;
+      const along=r(),padding=2+r()*18;
       if(side==='top')return{x:FIELD.x+along*FIELD.width,y:FIELD.y-extra+padding,side};
       if(side==='bottom')return{x:FIELD.x+along*FIELD.width,y:FIELD.y+FIELD.height+extra-padding,side};
       if(side==='left')return{x:FIELD.x-extra+padding,y:FIELD.y+along*FIELD.height,side};
       return{x:FIELD.x+FIELD.width+extra-padding,y:FIELD.y+along*FIELD.height,side};
     };
-    const inward=(p,side)=>side==='top'?p.vy:side==='bottom'?-p.vy:side==='left'?p.vx:-p.vx;
-    const beforeEntry=(p,side)=>side==='top'?p.y<0:side==='bottom'?p.y>H:side==='left'?p.x<0:p.x>W;
     function crossesView(a,b){
       // Segment/expanded-viewport intersection also catches a fast crossing
       // between lookahead samples, instead of rejecting an otherwise good inlet.
@@ -821,7 +835,7 @@ void main(){
         // top routes as well, and test flow at the candidate, not at the exit.
         const side=k<20?preferred:'top';
         candidate=sidePoint(side);
-        if(k===count-1){candidate.x=W*(.35+r()*.3);candidate.y=FIELD.y+3;}
+        if(k===count-1){candidate.x=W*(.35+r()*.3);candidate.y=FIELD.y-extra+3;}
       }
       const dx=candidate.x-base[0].x,dy=candidate.y-base[0].y;
       const poses=base.map((p,i)=>({...p,x:p.x+dx*ratios[i],y:p.y+dy*ratios[i],
@@ -835,6 +849,19 @@ void main(){
         const last=poses[2],later={x:last.x+last.vx*3,y:last.y+last.vy*3};
         if(!crosses&&!crossesView(last,later))continue;
       }
+      if(!neighbors)neighbors=horizons.map(t=>{
+        // Build the spacing lookup only after finding a viable inlet. The
+        // lookup is geometric and consumes no material/depth random seeds.
+        const list=[],rows=new Map();let maxBody=0;
+        for(const other of flakes)if(other!==f&&snowIsActive(other)){
+          const p=projectParticle(other,t),body=1.05*p.baseSize,index=list.length;
+          list.push(p.x,p.y,body);maxBody=Math.max(maxBody,body);
+          const x=Math.floor(p.x/128),y=Math.floor(p.y/128);
+          if(!rows.has(x))rows.set(x,new Map());
+          const row=rows.get(x);if(!row.has(y))row.set(y,[]);row.get(y).push(index);
+        }
+        return{list,rows,maxBody};
+      });
       let score=0;
       for(let h=0;h<poses.length;h++){
         const p=poses[h],near=neighbors[h],list=near.list,body=1.05*p.baseSize;
@@ -864,6 +891,7 @@ void main(){
     if(!best)return false;
     f.x+=(best.x-base[0].x)*base[0].z/CAMERA.focal;
     f.y+=(best.y-base[0].y)*base[0].z/CAMERA.focal;
+    f.inletSide=initial?null:best.side;f.nextBirthAt=0;
     return true;
   }
   function spawn(f,initial=false){
