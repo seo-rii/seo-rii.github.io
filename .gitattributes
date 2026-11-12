@@ -1,0 +1,2 @@
+review/*.html linguist-generated=true
+vendor/ink-snow/** linguist-vendored=true -whitespace
