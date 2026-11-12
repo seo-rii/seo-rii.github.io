@@ -57,13 +57,14 @@ request links to the downloadable artifact in this directory.
 - The page and snow scene follow the system's light or dark color scheme,
   including changes while the page is open. Theme changes keep the existing
   canvas, scroll density, and pause state.
-- Browser-forced darkening is detected independently of `prefers-color-scheme`.
-  The page, canvas, symbol, and browser theme color use one resolved palette so
-  automatic text brightening cannot leave the snow backdrop white. A hidden
-  CSS system-color probe is checked on preference/focus/visibility changes and
-  once per second while visible; it never runs in a scroll handler. Chromium's
-  auto-dark mode covers this regression in tests. Samsung Internet still needs
-  confirmation on the affected device and browser version.
+- Chromium's forced darkening is detected independently of `prefers-color-scheme`
+  through a CSS system-color probe. The page, canvas, symbol, and browser theme
+  color share the resolved palette. The probe is checked when preferences,
+  focus, or visibility change and once per second while visible; it never runs
+  in a scroll handler. Chromium's auto-dark mode covers this behavior in tests.
+  The user confirmed that the standalone HTML still fails in Samsung Internet.
+  Its forced-dark behavior remains unresolved; the Chromium tests do not verify
+  Samsung's paint transformations.
 - The translucent reading surface keeps the snow visible behind the content.
 - The snow stage uses the large viewport height (`100lvh`, with a `100vh`
   fallback) inside a clipped fixed viewport. Mobile browser toolbars can change
