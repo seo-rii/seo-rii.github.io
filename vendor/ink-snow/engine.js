@@ -732,7 +732,10 @@ void main(){
     if(typeof next.addEventListener!=='function'||!Number.isFinite(scrollPosition(next)))
       throw new TypeError('scrollContainer는 Window 또는 스크롤 가능한 HTMLElement여야 합니다.');
     if(scrollContainer===next)return;
-    if(scrollContainer)scrollContainer.removeEventListener('scroll',onPageScroll);
+    if(scrollContainer){
+      syncBufferedScroll();
+      scrollContainer.removeEventListener('scroll',onPageScroll);
+    }
     scrollContainer=next;
     scrollContainer.addEventListener('scroll',onPageScroll,{passive:true});
     resetScrollMotion();
@@ -756,10 +759,11 @@ void main(){
     return true;
   }
   function syncBufferedScroll(){
-    if(!isBufferedScroll()||paused||suspended||document.hidden||!visible)return false;
+    if(!isBufferedScroll()||paused||suspended)return false;
     // A native scroll can reach the compositor before its scroll event. Sample
-    // the actual position before taking a photograph, then anchor that image.
-    if(scrollPosition(scrollContainer)!==previousScrollTop)onPageScroll();
+    // active pages before a photograph or reset. Hidden/offscreen pages may
+    // only absorb input already queued while active, never new page travel.
+    if(!document.hidden&&visible&&scrollPosition(scrollContainer)!==previousScrollTop)onPageScroll();
     const now=window.performance?.now?.()??Date.now(),changed=applyScrollCamera(now);
     const clouds=updateScrollEffects(now,changed);
     return changed||clouds;
@@ -2345,6 +2349,7 @@ function compactSpriteBasis(p,motion){
   function stopAnimation(){if(raf){window.cancelAnimationFrame(raf);raf=0;}last=0;}
   function suspendRendering(reason){
     if(destroyed)return;
+    syncBufferedScroll();
     resetScrollMotion();
     suspended=true;recoveryNeeded=true;probeAssets=true;lastRecoveryReason=reason;
     stopAnimation();
@@ -2391,6 +2396,9 @@ function compactSpriteBasis(p,motion){
   }
   function resumeRendering(reason){
     if(destroyed)return;
+    // An active focus/pageshow can arrive before the next animation frame.
+    // A genuinely suspended page skips this and ignores its inactive travel.
+    syncBufferedScroll();
     resetScrollMotion();
     stopAnimation();suspended=false;probeAssets=true;
     requestRecovery(reason);
@@ -2600,7 +2608,7 @@ function compactSpriteBasis(p,motion){
   listen(stage,'pointerleave',()=>{resetPointerWindTracking();});
   listen(stage,'pointercancel',()=>{resetPointerWindTracking();});
   listen(stage,'pointermove',consumePointerWind);
-  listen(window,'blur',()=>{resetPointerWindTracking();pointerWindTarget=0;resetScrollMotion();});
+  listen(window,'blur',()=>{resetPointerWindTracking();pointerWindTarget=0;syncBufferedScroll();resetScrollMotion();});
   const snowAmountControl=getControl('snowAmount');
   listen(snowAmountControl,'input',()=>{
     const percent=Math.max(0,Math.min(200,Number(snowAmountControl.value)||0));
@@ -2867,6 +2875,9 @@ function compactSpriteBasis(p,motion){
     if(destroyed)throw new Error('InkSnow instance has been destroyed.');
     const next=normalizeSettings(patch,settings),changed=Object.keys(next).filter(k=>next[k]!==settings[k]);
     if(!changed.length)return {...settings};
+    // Integrate native movement with the old framing before a setting changes
+    // its camera mapping, buffer bounds, or pending-motion reset behavior.
+    if(changed.some(k=>['scrollWind','scrollMode','scrollBothDirections','aspectMode','aspectWidth','aspectHeight'].includes(k)))syncBufferedScroll();
     const oldAmount=settings.snowAmount;
     if(changed.includes('background')){
       const held=Number.isFinite(backgroundShownPhase)?backgroundShownPhase:backgroundTime;
@@ -2947,7 +2958,9 @@ function compactSpriteBasis(p,motion){
   listen(root,'input',notify);listen(root,'change',notify);
   if('IntersectionObserver'in window){
     const observer=new IntersectionObserver(entries=>{
-      const wasVisible=visible;visible=entries[0].isIntersecting;
+      const wasVisible=visible,nextVisible=entries[0].isIntersecting;
+      if(!nextVisible||!wasVisible)syncBufferedScroll();
+      visible=nextVisible;
       if(!visible){resetScrollMotion();stopAnimation();recoveryNeeded=true;probeAssets=true;}
       else if(!wasVisible){resetScrollMotion();last=0;requestRecovery('intersection');}
       schedule();

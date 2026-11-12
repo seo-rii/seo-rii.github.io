@@ -195,6 +195,40 @@ async function visiblePixels(page: Page, points: { x: number; y: number }[]) {
 	);
 }
 
+type ScreenPoint = Pick<Particle, 'id' | 'generation' | 'x' | 'y'>;
+
+async function screenSnowPoints(page: Page, visibleOnly = false): Promise<ScreenPoint[]> {
+	return page.evaluate((visibleOnly) => {
+		const scene = (window as HarnessWindow).bufferedScene;
+		const d = scene.read();
+		const box = scene.geometry();
+		const scale = box.width / d.logicalWidth;
+		const padding = scene.presentation().padding;
+		return d.displayedParticles
+			.filter((p) => !p.nearLens)
+			.map((p) => ({
+				id: p.id,
+				generation: p.generation,
+				x: box.x + p.x * scale,
+				y: box.y + padding + p.y * scale
+			}))
+			.filter(
+				(p) =>
+					!visibleOnly || (p.x > 10 && p.x < innerWidth - 10 && p.y > 10 && p.y < innerHeight - 10)
+			);
+	}, visibleOnly);
+}
+
+function screenDisplacement(before: ScreenPoint[], after: ScreenPoint[]) {
+	const points = new Map(after.map((p) => [p.id, p]));
+	return Math.max(
+		...before.map((p) => {
+			const next = points.get(p.id);
+			return next?.generation === p.generation ? Math.hypot(next.x - p.x, next.y - p.y) : Infinity;
+		})
+	);
+}
+
 test('native scrolling moves buffered pixels before the next scene capture', async ({ page }) => {
 	await mountScene(page);
 	const before = await page.evaluate(() => {
@@ -408,6 +442,64 @@ test('studio scroll controls refresh buffer bounds and the presentation fallback
 		'fixed',
 		'sticky'
 	]);
+});
+
+test('configuration fallback keeps pending native movement in the new frame', async ({ page }) => {
+	await mountScene(page);
+	await page.evaluate(() => {
+		const scene = (window as HarnessWindow).bufferedScene;
+		// Align the last 12fps capture with the physical clock before editing.
+		for (let i = 0; i < 4; i++) scene.frame();
+		scene.input(8);
+	});
+	const before = await screenSnowPoints(page, true);
+	await page.evaluate(() =>
+		(window as HarnessWindow).bufferedScene.api.update({ scrollWind: false })
+	);
+	const after = await screenSnowPoints(page);
+	expect(before.length).toBeGreaterThan(5);
+	// Removing a fractional CSS padding changes layout rounding (about 0.005px
+	// here). This still distinguishes the original 8px lost-input jump.
+	expect(
+		screenDisplacement(before, after),
+		'Disabling linkage absorbs the pending native offset'
+	).toBeLessThan(0.02);
+});
+
+test('lifecycle recovery keeps pending native movement before resetting scroll input', async ({
+	page
+}) => {
+	await mountScene(page);
+	const recoveryBefore = await page.evaluate(() => {
+		const scene = (window as HarnessWindow).bufferedScene;
+		scene.input(8);
+		return Number(scene.api.diagnostics({ particles: false }).recoveryCount);
+	});
+	const before = await screenSnowPoints(page, true);
+	await page.evaluate(() => {
+		// Headless pages stay visible; drive the real visibility handlers while
+		// preserving the input/capture ordering of a tab switch between frames.
+		Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+		document.dispatchEvent(new Event('visibilitychange'));
+		Object.defineProperty(document, 'hidden', { configurable: true, value: false });
+		document.dispatchEvent(new Event('visibilitychange'));
+	});
+	await expect
+		.poll(() =>
+			page.evaluate(() =>
+				Number(
+					(window as HarnessWindow).bufferedScene.api.diagnostics({ particles: false })
+						.recoveryCount
+				)
+			)
+		)
+		.toBeGreaterThan(recoveryBefore);
+	const after = await screenSnowPoints(page);
+	expect(before.length).toBeGreaterThan(5);
+	expect(
+		screenDisplacement(before, after),
+		'Recovery preserves the already visible native displacement'
+	).toBeLessThan(0.0001);
 });
 
 test('buffer exhaustion and large reverse jumps retain coverage and recapture at the current viewport', async ({
