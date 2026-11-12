@@ -55,6 +55,8 @@ request links to the downloadable artifact in this directory.
   fallback) inside a clipped fixed viewport. Mobile browser toolbars can change
   the visible area without resizing the canvas; window and orientation changes
   still update the scene dimensions.
+- The mobile introduction follows its content height, keeping the profile
+  links close to the introduction instead of leaving a large empty gap.
 - The original snowflake symbol is a static image within the first screen.
 - The background respects reduced motion, pauses in hidden tabs, and can be
   paused manually. It does not intercept links, keyboard input, or scrolling.

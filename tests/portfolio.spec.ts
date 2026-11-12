@@ -179,12 +179,28 @@ for (const width of [320, 390]) {
 	test(`mobile ${width}px keeps both languages and all social links readable without horizontal scrolling`, async ({
 		page
 	}) => {
+		// Dedicated tests cover animation; keep these layout measurements still.
+		await page.emulateMedia({ reducedMotion: 'reduce' });
 		await page.setViewportSize({ width, height: 844 });
 		await page.goto('/');
 		await expectSnowReady(page);
 		for (const language of ['한국어', 'English']) {
+			await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
 			await page.getByRole('button', { name: language, exact: true }).click();
 			await expectNoHorizontalOverflow(page);
+			const workLink = await page.locator('.work-link').boundingBox();
+			const socialLinks = await page.locator('.social-links').boundingBox();
+			expect(workLink).not.toBeNull();
+			expect(socialLinks).not.toBeNull();
+			const gap = socialLinks!.y - (workLink!.y + workLink!.height);
+			expect(
+				gap,
+				'Mobile profile links follow the introduction without a large empty gap'
+			).toBeGreaterThanOrEqual(0);
+			expect(
+				gap,
+				'Mobile profile links follow the introduction without a large empty gap'
+			).toBeLessThanOrEqual(100);
 			const links = page.locator('.social-links a');
 			await expect(links).toHaveCount(4);
 			for (const link of await links.all()) {

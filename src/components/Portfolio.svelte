@@ -471,11 +471,12 @@
 			gap: 5px;
 		}
 		.hero {
-			min-height: calc(100svh - 80px);
+			min-height: 0;
 		}
 		.hero-main {
 			position: relative;
 			display: block;
+			flex: none;
 			padding-block: 46px 44px;
 		}
 		.hero-copy {
