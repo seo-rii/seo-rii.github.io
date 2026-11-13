@@ -6,6 +6,26 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="color-scheme" content="light dark" />
 		%sveltekit.head%
+		<script id="theme-init">
+			(() => {
+				let saved = null;
+				try {
+					saved = localStorage.getItem('seorii-theme');
+				} catch {
+					/* A blocked store falls back to the system preference. */
+				}
+				const theme =
+					saved === 'light' || saved === 'dark'
+						? saved
+						: matchMedia('(prefers-color-scheme: dark)').matches
+							? 'dark'
+							: 'light';
+				document.documentElement.dataset.theme = theme;
+				for (const meta of document.querySelectorAll('meta[name="theme-color"]')) {
+					meta.content = theme === 'dark' ? '#101923' : '#ffffff';
+				}
+			})();
+		</script>
 	</head>
 	<body>
 		<div>%sveltekit.body%</div>

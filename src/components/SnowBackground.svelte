@@ -4,7 +4,8 @@
 	import type { InkSnowAPI, InkSnowSettings } from '../../vendor/ink-snow/engine.js';
 	import preset from '../lib/snow-settings.json';
 
-	let { paused = false }: { paused?: boolean } = $props();
+	let { paused = false, theme = null }: { paused?: boolean; theme?: 'light' | 'dark' | null } =
+		$props();
 	let host: HTMLDivElement;
 	let surface: HTMLDivElement;
 	let anchor: HTMLDivElement;
@@ -13,11 +14,34 @@
 	let snowAmount = $state(preset.settings.snowAmount);
 	let ready = $state(false);
 
+	function themeSettings(
+		selectedTheme: 'light' | 'dark'
+	): Pick<InkSnowSettings, 'theme' | 'snowColor' | 'backgroundColor' | 'washColor'> {
+		return selectedTheme === 'dark'
+			? {
+					theme: 'dark',
+					snowColor: '#e5eff8',
+					backgroundColor: '#101923',
+					washColor: '#355c80'
+				}
+			: {
+					theme: 'light',
+					snowColor: preset.settings.snowColor,
+					backgroundColor: preset.settings.backgroundColor,
+					washColor: preset.settings.washColor
+				};
+	}
+
 	$effect(() => {
 		// Read both inputs even while manually paused. Synchronize the imperative
 		// renderer; this does not assign any Svelte state.
 		const motionPreference = reducedMotion;
 		api?.setPaused(paused || motionPreference);
+	});
+
+	$effect(() => {
+		const selectedTheme = theme;
+		if (selectedTheme) api?.update(themeSettings(selectedTheme));
 	});
 
 	onMount(() => {
@@ -28,33 +52,18 @@
 		let atTop = window.scrollY <= 0;
 		let motionTimer = 0;
 		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-		const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
-
-		function themeSettings(): Pick<
-			InkSnowSettings,
-			'theme' | 'snowColor' | 'backgroundColor' | 'washColor'
-		> {
-			return colorScheme.matches
-				? {
-						theme: 'dark',
-						snowColor: '#e5eff8',
-						backgroundColor: '#101923',
-						washColor: '#355c80'
-					}
-				: {
-						theme: settings.theme,
-						snowColor: settings.snowColor,
-						backgroundColor: settings.backgroundColor,
-						washColor: settings.washColor
-					};
-		}
+		const rootTheme = document.documentElement.dataset.theme;
+		const initialTheme =
+			theme ??
+			(rootTheme === 'light' || rootTheme === 'dark' ? rootTheme : null) ??
+			(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
 		reducedMotion = reduced.matches;
 		snowAmount = atTop ? settings.snowAmount : readingSnowAmount;
 		const instance = mountInkSnow(host, {
 			settings: {
 				...settings,
-				...themeSettings(),
+				...themeSettings(initialTheme),
 				scrollMode: 'camera',
 				// Speed-dependent exposure expands CPU kernels and redraws clouds five
 				// times during fast scrolls. Keep the preset's normal falling-snow blur.
@@ -85,9 +94,6 @@
 			atTop = nextAtTop;
 			snowAmount = atTop ? settings.snowAmount : readingSnowAmount;
 			instance.update({ snowAmount });
-		}
-		function updateColorScheme() {
-			instance.update(themeSettings());
 		}
 		function updateMotionPreference() {
 			reducedMotion = reduced.matches;
@@ -121,7 +127,6 @@
 		window.addEventListener('pointermove', forwardPointer, { passive: true });
 		window.addEventListener('pointerout', leavePointer, { passive: true });
 		reduced.addEventListener('change', updateMotionPreference);
-		colorScheme.addEventListener('change', updateColorScheme);
 
 		return () => {
 			window.clearTimeout(motionTimer);
@@ -130,7 +135,6 @@
 			window.removeEventListener('pointermove', forwardPointer);
 			window.removeEventListener('pointerout', leavePointer);
 			reduced.removeEventListener('change', updateMotionPreference);
-			colorScheme.removeEventListener('change', updateColorScheme);
 			instance.destroy();
 			api = null;
 		};

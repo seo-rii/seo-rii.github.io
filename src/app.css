@@ -39,7 +39,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-	:root {
+	:root:not([data-theme='light']) {
 		color-scheme: dark;
 		--background: #101923;
 		--ink: #e5eef5;
@@ -64,6 +64,32 @@
 		--symbol-halo: radial-gradient(circle, #5077944d 0%, #1f34462b 48%, transparent 70%);
 		--symbol-filter: brightness(0) invert(1);
 	}
+}
+
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	--background: #101923;
+	--ink: #e5eef5;
+	--heading: #e5eef5;
+	--text: #c9d5df;
+	--muted: #a6b8c6;
+	--intro: #c1d0db;
+	--accent: #a1c4dc;
+	--line: rgb(185 210 230 / 24%);
+	--section-line: rgb(185 210 230 / 20%);
+	--article-line: rgb(185 210 230 / 14%);
+	--section-index: #8fa7ba;
+	--link-decoration: #8faec4;
+	--brand-accent: #94bcd8;
+	--divider: #7993a8;
+	--work-line: #88a9c0;
+	--work-hover: #d1e7f6;
+	--link-hover: rgb(127 171 200 / 12%);
+	--reading-overlay: rgb(16 25 35 / 50%);
+	--selection-background: #31546c;
+	--selection-ink: #f2f7fb;
+	--symbol-halo: radial-gradient(circle, #5077944d 0%, #1f34462b 48%, transparent 70%);
+	--symbol-filter: brightness(0) invert(1);
 }
 
 * {
