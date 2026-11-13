@@ -1,0 +1,41 @@
+{
+  "base_commit": "4728f6e79c89ffd5e50f9fe8c09b99d44adcc435",
+  "browser": "Chromium 158.0.8127.18",
+  "checks": [
+    "pnpm check: 0 errors, 0 warnings",
+    "pnpm lint",
+    "pnpm build",
+    "pnpm review:build"
+  ],
+  "playwright": {
+    "unique_tests_verified": 42,
+    "full_run": {
+      "startTime": "2026-11-13T02:59:56.256Z",
+      "duration": 404242.501,
+      "expected": 41,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    "isolated_navigation_recheck": {
+      "startTime": "2026-11-13T03:07:21.621Z",
+      "duration": 40084.044,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "note": "The navigation test reached the 45s suite limit during concurrent verification; the unchanged source passed when that test was run alone."
+  },
+  "source_sha256": {
+    "src/app.html": "62862c8a008e0ce9a75e2856815d63560163da1d4c7f4890ca2eba90734f589e",
+    "src/app.css": "1ae843e79255816c6b83bee032480442dc8bb17e586a1267552987bf9831b252",
+    "src/components/Portfolio.svelte": "591d04d1529205aa6096f3442d5999184c2d33054fc0237ab3f2f785790b2823"
+  },
+  "standalone": {
+    "path": "review/seorii-preview.html",
+    "bytes": 490846,
+    "sha256": "b00af826ed50dd000e41d603c8091a34e25af761a3b2ca76ae191f2fed11bc5e",
+    "offline_capture_errors": []
+  }
+}

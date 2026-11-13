@@ -102,6 +102,7 @@ async function analyzeSnapshots(page: Page, first: Buffer, second: Buffer, compa
 async function expectPaintedContrast(page: Page, selector: string) {
 	// Computed colors do not expose browser paint transformations. Compare actual
 	// glyph pixels with the same paused backdrop while the text is hidden.
+	await expect(page.locator('html')).not.toHaveAttribute('data-theme-transition', 'true');
 	await settlePaint(page);
 	const element = page.locator(selector);
 	const bounds = await element.boundingBox();
@@ -231,10 +232,10 @@ test('forced painting preserves manual palette choices, paused canvas and scroll
 	await page.locator('.theme-toggle').dispatchEvent('click');
 	await expectPreserved('light');
 	await page.emulateMedia({ colorScheme: 'dark' });
-	await expectPreserved('light');
+	await expectPreserved('dark');
 	await expectPaintedContrast(page, 'h1');
 	await session.send('Emulation.setAutoDarkModeOverride', { enabled: false });
-	await expectPreserved('light');
+	await expectPreserved('dark');
 });
 
 test('composition preserves the native light image and leaves the native dark palette unchanged', async ({

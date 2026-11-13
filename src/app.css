@@ -129,6 +129,16 @@ a:focus-visible {
 	color: var(--selection-ink);
 }
 
+:root[data-theme-transition]::view-transition-group(root),
+:root[data-theme-transition]::view-transition-old(root),
+:root[data-theme-transition]::view-transition-new(root) {
+	animation-duration: 320ms;
+	animation-timing-function: ease-in-out;
+}
+:root[data-theme-transition]::view-transition {
+	pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	html {
 		scroll-behavior: auto;

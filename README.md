@@ -65,9 +65,17 @@ request links to the downloadable artifact in this directory.
   Scroll-driven camera movement keeps its continuous transport behavior.
 - The header's light/dark toggle switches the page, symbol, snow scene, and
   browser theme color together. An explicit choice is stored as `seorii-theme`
-  and takes priority over system changes. Until a choice is made, the page
-  follows the system preference, including changes while open. Theme changes
-  keep the existing canvas, scroll density, and pause state.
+  for subsequent visits while the system preference is unchanged. A system
+  theme change returns the page to that preference, including after a manual
+  choice. `seorii-theme-system` records the last system preference so changes
+  made while the page is closed also invalidate an older manual choice.
+  Existing saved choices are retained when this system record is absent.
+  Theme changes keep the existing canvas, scroll density, and pause state.
+- Manual and system theme changes crossfade the rendered page over 320ms with
+  the View Transitions API. The snow palette is applied before the new view is
+  captured, keeping the text, symbol and background together. Rapid changes
+  supersede pending transitions. Initial loading, reduced motion and browsers
+  without the API apply the selected theme immediately.
 - A small head script applies a saved theme before the page renders. The
   standalone review embeds the same script from `src/app.html`. If storage is
   blocked, the toggle still works for the current page.

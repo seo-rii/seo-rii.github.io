@@ -8,19 +8,26 @@
 		%sveltekit.head%
 		<script id="theme-init">
 			(() => {
+				const system = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 				let saved = null;
+				let previousSystem = null;
 				try {
 					saved = localStorage.getItem('seorii-theme');
+					previousSystem = localStorage.getItem('seorii-theme-system');
 				} catch {
 					/* A blocked store falls back to the system preference. */
 				}
-				const theme =
-					saved === 'light' || saved === 'dark'
-						? saved
-						: matchMedia('(prefers-color-scheme: dark)').matches
-							? 'dark'
-							: 'light';
+				const systemChanged =
+					(previousSystem === 'light' || previousSystem === 'dark') && previousSystem !== system;
+				const theme = !systemChanged && (saved === 'light' || saved === 'dark') ? saved : system;
+				try {
+					if (systemChanged) localStorage.removeItem('seorii-theme');
+					localStorage.setItem('seorii-theme-system', system);
+				} catch {
+					/* Theme initialization also works without persistent storage. */
+				}
 				document.documentElement.dataset.theme = theme;
+				document.documentElement.dataset.themeSystem = system;
 				for (const meta of document.querySelectorAll('meta[name="theme-color"]')) {
 					meta.content = theme === 'dark' ? '#101923' : '#ffffff';
 				}
