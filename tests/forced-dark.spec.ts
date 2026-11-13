@@ -192,7 +192,9 @@ test('forced painting preserves manual palette choices, paused canvas and scroll
 	await page.goto('/');
 	await expectTheme(page, 'light');
 	await page.emulateMedia({ reducedMotion: 'no-preference' });
-	await page.getByRole('button', { name: /눈 잠시 멈추기/ }).click();
+	await page.evaluate(() => window.scrollTo({ top: 1, behavior: 'instant' }));
+	await expect(page.locator('.snow-background')).toHaveAttribute('data-snow-amount', '0.25');
+	await page.getByRole('button', { name: /눈 잠시 멈추기/ }).dispatchEvent('click');
 	await expect(page.locator('.snow-host')).toHaveAttribute('data-running', 'false');
 	await page.locator('.snow-host canvas').evaluate((canvas) => {
 		canvas.setAttribute('data-identity-sentinel', 'preserved');

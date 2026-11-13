@@ -58,7 +58,10 @@ request links to the downloadable artifact in this directory.
   the preset's normal falling-snow blur.
 - The top of the document uses the original `snowAmount: 1`. Any scroll below
   the top reduces it to `0.25`; returning to the top restores it to `1`. The
-  renderer transitions particle count without restarting the scene.
+  renderer transitions particle count without restarting the scene. While snow
+  is paused (including reduced motion), its current density stays fixed across
+  this boundary. Resuming applies the density for the current scroll position
+  through the same fade.
 - Natural falling snow re-enters through spaced, inward-moving routes when it
   leaves the view. This prevents depth changes from repeatedly bouncing the
   same particles between opposite edges and concentrating long-running inlets.
@@ -87,8 +90,10 @@ request links to the downloadable artifact in this directory.
   fallback) inside the page's clipped background. The logical viewport stays
   separate from the drawing margin. Mobile browser toolbars can change the
   visible area without resizing the canvas; window and orientation changes
-  still update the scene dimensions. Paused snow uses a fixed surface so both
-  animation and scroll movement stop.
+  still update the scene dimensions. Pausing stops the scene's time while the
+  cached surface still follows native document scrolling. Scrolling replenishes
+  its reserve at the preset's capture rate without advancing the held film time;
+  an idle paused scene schedules no animation frames.
 - The mobile introduction follows its content height, keeping the profile
   links close to the introduction instead of leaving a large empty gap.
 - The original snowflake symbol is a static image within the first screen.
