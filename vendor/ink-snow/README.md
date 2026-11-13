@@ -53,8 +53,9 @@ The portfolio uses the package's public `mountInkSnow` API from
 `src/components/SnowBackground.svelte`. The original settings file is preserved
 in `src/lib/snow-settings.json`. The site overrides `scrollMode` from
 `cameraSame` to `camera` to reverse scroll motion and applies the package's
-dark palette when the system uses a dark color scheme. The palette updates in
-place when the preference changes. The site also sets `scrollBlur: 0` to avoid
+dark palette when the page's selected theme is dark. The header's saved choice
+takes priority over the system preference. Palette updates keep the existing
+canvas in place. The site also sets `scrollBlur: 0` to avoid
 speed-dependent snow-kernel expansion and five-pass cloud exposure during fast
 scrolling, while retaining the preset's ordinary snow blur. It selects
 `scrollFrameRate: 'buffered'` to keep captures at the preset's 12fps while its

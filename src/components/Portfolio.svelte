@@ -6,7 +6,10 @@
 	import symbol from '../assets/seorii.png';
 
 	type Language = 'ko' | 'en';
+	type ColorScheme = 'light' | 'dark';
 	let language = $state<Language>('ko');
+	let colorScheme = $state<ColorScheme | null>(null);
+	let selectedScheme: ColorScheme | null = null;
 	let snowPaused = $state(false);
 	let reducedMotion = $state(false);
 	const copy = {
@@ -24,6 +27,9 @@
 			reducedMotion: '동작 줄이기 설정 사용 중',
 			back: '맨 위로',
 			skip: '본문으로 건너뛰기',
+			themeToggle: '다크 모드',
+			switchToLight: '라이트 모드로 전환',
+			switchToDark: '다크 모드로 전환',
 			description:
 				'이서현, seorii. KAIST 전산학부. 알고리즘부터 웹까지, 만들어 온 것들과 경험을 소개합니다.'
 		},
@@ -41,6 +47,9 @@
 			reducedMotion: 'Reduced motion is on',
 			back: 'Back to top',
 			skip: 'Skip to content',
+			themeToggle: 'Dark mode',
+			switchToLight: 'Switch to light mode',
+			switchToDark: 'Switch to dark mode',
 			description:
 				'Seohyun Lee, seorii. Computer Science at KAIST. Software, open source, and the things I have built along the way.'
 		}
@@ -63,6 +72,24 @@
 		}
 	}
 
+	function applyColorScheme(next: ColorScheme) {
+		colorScheme = next;
+		document.documentElement.dataset.theme = next;
+		for (const meta of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
+			meta.content = next === 'dark' ? '#101923' : '#ffffff';
+		}
+	}
+
+	function toggleColorScheme() {
+		selectedScheme = colorScheme === 'dark' ? 'light' : 'dark';
+		applyColorScheme(selectedScheme);
+		try {
+			localStorage.setItem('seorii-theme', selectedScheme);
+		} catch {
+			/* The selection still works for this page when storage is blocked. */
+		}
+	}
+
 	onMount(() => {
 		let preferred: string | null = null;
 		try {
@@ -78,13 +105,28 @@
 					? 'ko'
 					: 'en';
 		document.documentElement.lang = language;
+		const themePreference = window.matchMedia('(prefers-color-scheme: dark)');
+		try {
+			const stored = localStorage.getItem('seorii-theme');
+			selectedScheme = stored === 'light' || stored === 'dark' ? stored : null;
+		} catch {
+			/* Use the system preference until a theme is selected on this page. */
+		}
+		const updateColorScheme = () => {
+			applyColorScheme(selectedScheme ?? (themePreference.matches ? 'dark' : 'light'));
+		};
+		updateColorScheme();
+		themePreference.addEventListener('change', updateColorScheme);
 		const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
 		const updateMotion = () => {
 			reducedMotion = preference.matches;
 		};
 		updateMotion();
 		preference.addEventListener('change', updateMotion);
-		return () => preference.removeEventListener('change', updateMotion);
+		return () => {
+			preference.removeEventListener('change', updateMotion);
+			themePreference.removeEventListener('change', updateColorScheme);
+		};
 	});
 </script>
 
@@ -101,26 +143,58 @@
 </svelte:head>
 
 <div id="top" class="site-shell" lang={language}>
-	<SnowBackground paused={snowPaused} />
+	<SnowBackground paused={snowPaused} theme={colorScheme} />
 	<a class="skip-link" href="#about">{text.skip}</a>
 	<header class="site-header">
 		<a class="wordmark" href="#top" aria-label="seorii">seorii<span aria-hidden="true">.</span></a>
-		<div class="language-switch" role="group" aria-label="Language / 언어">
+		<div class="header-controls">
+			<div class="language-switch" role="group" aria-label="Language / 언어">
+				<button
+					type="button"
+					lang="ko"
+					aria-label="한국어"
+					aria-pressed={language === 'ko'}
+					onclick={() => selectLanguage('ko')}>KO</button
+				>
+				<span aria-hidden="true">/</span>
+				<button
+					type="button"
+					lang="en"
+					aria-label="English"
+					aria-pressed={language === 'en'}
+					onclick={() => selectLanguage('en')}>EN</button
+				>
+			</div>
 			<button
+				class="theme-toggle"
 				type="button"
-				lang="ko"
-				aria-label="한국어"
-				aria-pressed={language === 'ko'}
-				onclick={() => selectLanguage('ko')}>KO</button
+				aria-label={text.themeToggle}
+				aria-pressed={colorScheme === 'dark'}
+				title={colorScheme === 'dark' ? text.switchToLight : text.switchToDark}
+				onclick={toggleColorScheme}
 			>
-			<span aria-hidden="true">/</span>
-			<button
-				type="button"
-				lang="en"
-				aria-label="English"
-				aria-pressed={language === 'en'}
-				onclick={() => selectLanguage('en')}>EN</button
-			>
+				<svg
+					width="20"
+					height="20"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.5"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+					focusable="false"
+				>
+					{#if colorScheme === 'dark'}
+						<circle cx="12" cy="12" r="4" />
+						<path
+							d="M12 2v2m0 16v2M2 12h2m16 0h2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"
+						/>
+					{:else}
+						<path d="M20.3 15.7A8.8 8.8 0 0 1 8.3 3.7a8.8 8.8 0 1 0 12 12Z" />
+					{/if}
+				</svg>
+			</button>
 		</div>
 	</header>
 
@@ -212,10 +286,30 @@
 	.wordmark span {
 		color: var(--brand-accent);
 	}
+	.header-controls {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		margin-left: auto;
+	}
+	.theme-toggle {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		flex: none;
+		padding: 0;
+		border: 1px solid var(--line);
+		border-radius: 50%;
+		background: transparent;
+		cursor: pointer;
+	}
+	.theme-toggle:hover {
+		background: var(--link-hover);
+	}
 	.language-switch {
 		display: flex;
 		gap: 8px;
-		margin-left: auto;
 		align-items: center;
 		font-size: 11px;
 	}
@@ -468,6 +562,9 @@
 		}
 		.language-switch {
 			gap: 5px;
+		}
+		.header-controls {
+			gap: 10px;
 		}
 		.hero {
 			min-height: 0;

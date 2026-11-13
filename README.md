@@ -63,9 +63,14 @@ request links to the downloadable artifact in this directory.
   leaves the view. This prevents depth changes from repeatedly bouncing the
   same particles between opposite edges and concentrating long-running inlets.
   Scroll-driven camera movement keeps its continuous transport behavior.
-- The page and snow scene follow the system's light or dark color scheme,
-  including changes while the page is open. Theme changes keep the existing
-  canvas, scroll density, and pause state.
+- The header's light/dark toggle switches the page, symbol, snow scene, and
+  browser theme color together. An explicit choice is stored as `seorii-theme`
+  and takes priority over system changes. Until a choice is made, the page
+  follows the system preference, including changes while open. Theme changes
+  keep the existing canvas, scroll density, and pause state.
+- A small head script applies a saved theme before the page renders. The
+  standalone review embeds the same script from `src/app.html`. If storage is
+  blocked, the toggle still works for the current page.
 - The translucent reading surface keeps the snow visible behind the content.
 - The snow stage uses the large viewport height (`100lvh`, with a `100vh`
   fallback) inside the page's clipped background. The logical viewport stays

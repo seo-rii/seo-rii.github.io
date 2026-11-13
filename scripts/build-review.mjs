@@ -44,6 +44,10 @@ const css = styles
 const favicon = (await readFile(new URL('../static/favicon.ico', import.meta.url))).toString(
 	'base64'
 );
+// Use the production bootstrap before mounting the same component offline.
+const appTemplate = await readFile(new URL('../src/app.html', import.meta.url), 'utf8');
+const themeInit = appTemplate.match(/<script id="theme-init">[\s\S]*?<\/script>/g);
+if (themeInit?.length !== 1) throw new Error('Expected one shared theme bootstrap');
 const html = `<!doctype html>
 <html lang="ko">
 <head>
@@ -53,6 +57,7 @@ const html = `<!doctype html>
 <link rel="icon" href="data:image/x-icon;base64,${favicon}">
 <title>이서현 · seorii</title>
 <style>${css}</style>
+${themeInit[0]}
 </head>
 <body>
 <div id="portfolio"></div>
