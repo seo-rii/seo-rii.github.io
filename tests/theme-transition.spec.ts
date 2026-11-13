@@ -84,12 +84,15 @@ for (const target of ['production', 'standalone'] as const) {
 	}) => {
 		await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'no-preference' });
 		await openTarget(page, context, target);
-		await page.locator('.snow-toggle').click();
+		// Freeze a reading-density scene before testing its palette transition.
+		// A scene paused at the top intentionally keeps its full population.
+		await page.evaluate(() => scrollTo({ top: 1, behavior: 'instant' }));
+		await expect(page.locator('.snow-background')).toHaveAttribute('data-snow-amount', '0.25');
+		await page.locator('.snow-toggle').dispatchEvent('click');
 		await expect(page.locator('.snow-host')).toHaveAttribute('data-running', 'false');
 		await page.locator('.snow-host canvas').evaluate((canvas) => {
 			canvas.setAttribute('data-crossfade-probe', 'preserved');
 		});
-		await page.evaluate(() => scrollTo({ top: 1, behavior: 'instant' }));
 		await expect(page.locator('.snow-background')).toHaveAttribute('data-snow-amount', '0.25');
 		await page.locator('.theme-toggle').dispatchEvent('click');
 		await transitionReady(page);

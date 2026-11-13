@@ -18,7 +18,8 @@ export interface InkSnowAPI {
   downloadHTML(filename?:string):Promise<void>;
   importJSON(json:string|object):InkSnowSettings;
   downloadSettings(filename?:string):void;
-  setPaused(value:boolean):void;
+  /** Optional duration in milliseconds eases the scene clock; omitted means immediate. */
+  setPaused(value:boolean,options?:{duration?:number}):void;
   readonly paused:boolean;
   setControls(value:boolean):void;
   setScrollContainer(target?:Window|HTMLElement|null):void;
@@ -42,7 +43,7 @@ export interface InkSnowOptions {
   debug?:boolean;
   onSettingsChange?:(settings:InkSnowSettings)=>void;
   onPausedChange?:(paused:boolean)=>void;
-  /** Called after presentation. scrollTop anchors that bitmap; padding uses CSS pixels. */
+  /** scrollTop anchors the bitmap; padding uses CSS pixels. paused freezes time, not buffered scroll. */
   onPresent?:(frame:{scrollTop:number;padding:number;paused:boolean})=>void;
   onReady?:(api:InkSnowAPI)=>void;
 }

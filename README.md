@@ -58,7 +58,10 @@ request links to the downloadable artifact in this directory.
   the preset's normal falling-snow blur.
 - The top of the document uses the original `snowAmount: 1`. Any scroll below
   the top reduces it to `0.25`; returning to the top restores it to `1`. The
-  renderer transitions particle count without restarting the scene.
+  renderer transitions particle count without restarting the scene. While snow
+  is paused (including reduced motion), its current density stays fixed across
+  this boundary. Resuming applies the density for the current scroll position
+  through the same fade.
 - Natural falling snow re-enters through spaced, inward-moving routes when it
   leaves the view. This prevents depth changes from repeatedly bouncing the
   same particles between opposite edges and concentrating long-running inlets.
@@ -95,13 +98,19 @@ request links to the downloadable artifact in this directory.
   fallback) inside the page's clipped background. The logical viewport stays
   separate from the drawing margin. Mobile browser toolbars can change the
   visible area without resizing the canvas; window and orientation changes
-  still update the scene dimensions. Paused snow uses a fixed surface so both
-  animation and scroll movement stop.
+  still update the scene dimensions. Pausing stops the scene's time while the
+  cached surface still follows native document scrolling. Scrolling replenishes
+  its reserve at the preset's capture rate without advancing the held film time;
+  an idle paused scene schedules no animation frames.
 - The mobile introduction follows its content height, keeping the profile
   links close to the introduction instead of leaving a large empty gap.
 - The original snowflake symbol is a static image within the first screen.
 - The background respects reduced motion, pauses in hidden tabs, and can be
   paused manually. It does not intercept links, keyboard input, or scrolling.
+- Manual pause and resume ease the scene clock over 400 milliseconds, slowing
+  or accelerating the existing snow, watercolor and film without replacing the
+  canvas or fading the picture. Reversing a transition continues from its
+  current speed. Reduced motion and hidden pages still stop immediately.
 - Korean and English retain the existing biography, projects, open source, and
   awards. Browser language selects the initial language; the KO/EN controls
   persist an explicit preference when storage is available.

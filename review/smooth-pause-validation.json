@@ -1,0 +1,29 @@
+{
+  "validation_scope": "PRs #6, #7 and #8 combined in an isolated review worktree; engine and snow component inputs below match this branch.",
+  "base_commit": "f9e9cad6fd29312d6716b26a78774d750a7bf523",
+  "checks": [
+    "pnpm check: 0 errors, 0 warnings",
+    "pnpm lint",
+    "pnpm build",
+    "pnpm review:build"
+  ],
+  "playwright": {
+    "startTime": "2026-11-13T03:52:56.380Z",
+    "duration": 322192.57800000004,
+    "expected": 52,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "source_sha256": {
+    "src/components/SnowBackground.svelte": "6b68c763912351912ca8695069222e1dbcaaf02b133f27d002c9c7585161f8f8",
+    "vendor/ink-snow/engine.js": "97cf515ad3ce47750158ed86040ece48b84de477cf382cc87ea2198fbcaca5b0",
+    "vendor/ink-snow/engine.d.ts": "433fdc13650e7c6e6c57b2ea5bdf90b0cae2ccd25d743af478e0a4db66721b75",
+    "src/lib/snow-settings.json": "7431b7128772a78c65701404ee6df44028cab9927ec11a8bdfebe4b61d751b02"
+  },
+  "standalone": {
+    "path": "review/seorii-preview.html",
+    "bytes": 490358,
+    "sha256": "a10ecfb307b52c7a83711df08b528966ddbd9f8a744b22e093bd2248bfb1b60a"
+  }
+}

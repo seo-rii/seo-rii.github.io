@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { mountInkSnow } from '../../vendor/ink-snow/engine.js';
 	import type { InkSnowAPI, InkSnowSettings } from '../../vendor/ink-snow/engine.js';
 	import preset from '../lib/snow-settings.json';
@@ -36,7 +36,7 @@
 		// Read both inputs even while manually paused. Synchronize the imperative
 		// renderer; this does not assign any Svelte state.
 		const motionPreference = reducedMotion;
-		api?.setPaused(paused || motionPreference);
+		api?.setPaused(paused || motionPreference, { duration: motionPreference ? 0 : 400 });
 	});
 
 	$effect(() => {
@@ -73,12 +73,15 @@
 			// Scroll the cached overscan with the document. Only new animation
 			// captures rebuild the picture and recenter its reusable margin.
 			scrollFrameRate: 'buffered',
-			onPresent({ scrollTop, padding, paused: held }) {
-				const fixed = held || padding === 0;
+			onPresent({ scrollTop, padding }) {
+				const fixed = padding === 0;
 				anchor.style.height = fixed ? '0px' : `${Math.max(0, scrollTop)}px`;
 				surface.style.position = fixed ? 'fixed' : 'sticky';
 				surface.style.top = fixed ? '0px' : `${-padding}px`;
 				surface.style.bottom = fixed ? 'auto' : `${-padding}px`;
+			},
+			onPausedChange(held) {
+				if (!held) untrack(updateAmount);
 			},
 			paused: paused || reduced.matches,
 			controls: false,
@@ -90,10 +93,15 @@
 
 		function updateAmount() {
 			const nextAtTop = window.scrollY <= 0;
-			if (nextAtTop === atTop) return;
 			atTop = nextAtTop;
-			snowAmount = atTop ? settings.snowAmount : readingSnowAmount;
-			instance.update({ snowAmount });
+			const renderer = api;
+			// A held scene keeps its exact population across the top boundary.
+			// Resume applies the current target through the renderer's normal fade.
+			if (!renderer || renderer.paused || paused || reduced.matches) return;
+			const nextAmount = atTop ? settings.snowAmount : readingSnowAmount;
+			if (nextAmount === snowAmount) return;
+			snowAmount = nextAmount;
+			renderer.update({ snowAmount });
 		}
 		function updateMotionPreference() {
 			reducedMotion = reduced.matches;
