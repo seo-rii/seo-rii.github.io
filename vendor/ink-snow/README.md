@@ -25,9 +25,11 @@ sampled for that bitmap, and `padding` is the buffer size on each side in CSS
 pixels. An integration can anchor a native sticky scroll layer to that position
 and clip its travel to the padding until the next capture. The scroll layer can
 then move without a JavaScript scroll handler or another density composition.
-Keep it fixed while paused, and also when `padding === 0`. Pause absorbs pending
-camera movement into one held-time redraw; resume changes the scroll anchor
-without applying travel that occurred while paused.
+Keep it fixed only when `padding === 0`. Paused buffered scenes retain native
+scroll transport: scroll input replenishes the reserve at the configured capture
+rate without advancing simulation time, layer samples, or the held exposure.
+Idle paused scenes do not schedule a continuous animation loop. Both pause and
+resume absorb pending native movement before reanchoring the photograph.
 
 Buffered camera movement is a uniform 1:1 screen-space pan for the complete
 photograph. Both `camera` and `cameraSame` follow native page movement, and the

@@ -606,7 +606,7 @@ void main(){
   let captureOrigin=0,captureIndex=0,captureCount=0,historyValid=false,historyTime=-1,displayedAt=0;
   let presentationCount=0,captureReady=false,transitionReady=false,latestCaptureTime=0,previousCaptureTime=0,screenBlend=1;
   let lastSnowFrame=null,lastFilmTime=0,lastFilmSeed=0;
-  let frameScrollTop=0,frameCamera=0;
+  let frameScrollTop=0,frameCamera=0,pausedScrollCaptureMs=-Infinity;
   let presentationTime=NaN,presentationPoses=[];
   let latestParticles=new Map(),previousParticles=new Map();
   let displayPose={x:0,y:0,angle:0,zoom:1};
@@ -694,7 +694,7 @@ void main(){
     const gap=now-lastScrollEventMs;
     previousScrollTop=top;
     lastScrollEventMs=now;
-    if(!settings.scrollWind||paused||suspended||document.hidden||!visible)return;
+    if(!settings.scrollWind||paused&&!isBufferedScroll()||suspended||document.hidden||!visible)return;
     // Legacy modes ignore discontinuous page jumps. Buffered framing also
     // absorbs those jumps because its displayed layer follows native scroll.
     if(!Number.isFinite(delta)||!Number.isFinite(gap)||gap<0)return;
@@ -729,6 +729,7 @@ void main(){
       pendingCloudY+=signed*(W/Math.max(1,cssWidth))*.72*settings.scrollCloudStrength;
     }
     scrollCount++;
+    if(paused&&isBufferedScroll())schedule();
   }
   function setScrollContainer(target=window){
     const next=target||window;
@@ -762,7 +763,7 @@ void main(){
     return true;
   }
   function syncBufferedScroll(){
-    if(!isBufferedScroll()||paused||suspended)return false;
+    if(!isBufferedScroll()||suspended)return false;
     // A native scroll can reach the compositor before its scroll event. Sample
     // active pages before a photograph or reset. Hidden/offscreen pages may
     // only absorb input already queued while active, never new page travel.
@@ -2208,6 +2209,7 @@ function compactSpriteBasis(p,motion){
     ctx=screen;ctx.save();const scale=canvas.width/W;ctx.setTransform(scale,0,0,scale,0,-renderTop*scale);drawObservation(force);ctx.restore();ctx=sceneContext;
     drawForegroundOverlay();
     presentationCount++;
+    if(paused)pausedScrollCaptureMs=window.performance.now();
     options.onPresent?.({scrollTop:frameScrollTop,padding:renderPadding*cssWidth/W,paused});
   }
   function applyFilmPose(g){
@@ -2319,8 +2321,20 @@ function compactSpriteBasis(p,motion){
   }
   function animate(now){
     raf=0;if(destroyed||root.isConnected===false)return;
-    if(paused||!visible||document.hidden||suspended||lostSurfaces.size){last=0;return;}
+    if(!visible||document.hidden||suspended||lostSurfaces.size){last=0;return;}
     if(recoveryNeeded){flushRecovery();if(recoveryNeeded){last=0;return;}}
+    if(paused){
+      last=0;
+      if(!isBufferedScroll()||!pendingBufferedScroll())return;
+      // Only the viewport moves. Keep the held film time, layer samples and
+      // snow population intact; rebuild its reserve at most at capture fps.
+      const interval=1000/(settings.fps||60);
+      if(now-pausedScrollCaptureMs+1e-5>=interval){
+        render(false,true);presentOutput(elapsed,true);
+        if(Number.isFinite(scrollInputMs))lastScrollResponseMs=window.performance.now()-scrollInputMs;
+      }else raf=window.requestAnimationFrame(animate);
+      return;
+    }
     const cameraChanged=applyScrollCamera(now);
     const cloudChanged=updateScrollEffects(now,cameraChanged);
     let captured=false;
@@ -2427,10 +2441,13 @@ function compactSpriteBasis(p,motion){
     requestRecovery(reason);
   }
   function schedule(){
-    if(!destroyed&&!raf&&!paused&&visible&&!document.hidden&&!suspended&&!lostSurfaces.size){
+    if(!destroyed&&!raf&&(!paused||isBufferedScroll()&&pendingBufferedScroll())&&visible&&!document.hidden&&!suspended&&!lostSurfaces.size){
       if(recoveryNeeded){requestRecovery(lastRecoveryReason||'schedule');return;}
       raf=window.requestAnimationFrame(animate);
     }
+  }
+  function pendingBufferedScroll(){
+    return scrollCameraDirty||Math.abs(pendingCloudY)>1e-12||scrollPosition(scrollContainer)!==previousScrollTop;
   }
   let viewControlsTimer=0,viewWasFullscreen=false,viewWasObserving=false;
   const nativeFullscreen=()=>document.fullscreenElement===stage||document.webkitFullscreenElement===stage;
@@ -2918,16 +2935,13 @@ function compactSpriteBasis(p,motion){
   function setPausedImmediately(value){
     if(paused===value)return;
     if(buffered){
-      if(value)syncBufferedScroll();
+      const panned=syncBufferedScroll();
       paused=value;last=0;
       if(paused&&raf){cancelAnimationFrame(raf);raf=0;}
-      if(paused){
-        // Keep the photograph's time and exposure selection. Only absorb the
-        // pending page pan before its holder becomes fixed.
+      if(paused||panned){
+        // Pause freezes film time, not its viewport. Absorb any native pan
+        // before reanchoring the same held scene on either state transition.
         render(false,true);
-      }else{
-        // Scrolling a paused page does not move its camera on resume.
-        frameScrollTop=scrollPosition(scrollContainer);
       }
       resetScrollMotion();announce();presentOutput(elapsed,true);schedule();return;
     }

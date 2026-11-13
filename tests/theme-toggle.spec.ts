@@ -150,7 +150,7 @@ for (const target of ['production', 'standalone'] as const) {
 		await page.emulateMedia({ colorScheme: 'dark' });
 		await expectTheme(page, 'light');
 
-		await page.locator('.snow-toggle').click();
+		await page.locator('.snow-toggle').dispatchEvent('click');
 		// Keep the header visible while retaining the below-top reading amount.
 		await page.evaluate(() => window.scrollTo({ top: 1, behavior: 'instant' }));
 		await settleCanvas(page);

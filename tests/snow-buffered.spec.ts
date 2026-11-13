@@ -15,6 +15,8 @@ type Particle = {
 	nearLens?: boolean;
 };
 type Diagnostics = {
+	time: number;
+	layerTimes: number[];
 	captureCount: number;
 	logicalWidth: number;
 	logicalHeight: number;
@@ -108,7 +110,7 @@ body{margin:0}#shell{position:relative;height:20000px}
 				scrollContainer: window,
 				onPresent(frame: PresentedFrame) {
 					lastPresentation = { ...frame };
-					const fixed = frame.paused || frame.padding === 0;
+					const fixed = frame.padding === 0;
 					anchor.style.height = fixed ? '0px' : `${frame.scrollTop}px`;
 					holder.style.position = fixed ? 'fixed' : 'sticky';
 					holder.style.top = fixed ? '0px' : `${-frame.padding}px`;
@@ -263,6 +265,56 @@ test('native scrolling moves buffered pixels before the next scene capture', asy
 	expectCoverage(after.geometry);
 });
 
+test('paused cached pixels move immediately and top-boundary round trips keep the same held snow', async ({
+	page
+}) => {
+	await mountScene(page);
+	await page.evaluate(() => (window as HarnessWindow).bufferedScene.api.setPaused(true));
+	const held = await page.evaluate(() => {
+		const scene = (window as HarnessWindow).bufferedScene;
+		scene.paintProbe();
+		return { diagnostics: scene.read(), geometry: scene.geometry() };
+	});
+	const points = await screenSnowPoints(page, true);
+	await page.evaluate(() => (window as HarnessWindow).bufferedScene.input(1));
+	const immediate = await page.evaluate(() => {
+		const scene = (window as HarnessWindow).bufferedScene;
+		return { diagnostics: scene.read(), geometry: scene.geometry() };
+	});
+	expect(immediate.geometry.y - held.geometry.y).toBeCloseTo(-1, 4);
+	expect(immediate.diagnostics.performance.renderSamples).toBe(
+		held.diagnostics.performance.renderSamples
+	);
+	expect((await visiblePixels(page, [{ x: 120, y: 89 }]))[0]).toEqual([255, 0, 255, 255]);
+	await page.evaluate(() => {
+		const scene = (window as HarnessWindow).bufferedScene;
+		for (let i = 0; i < 6; i++) scene.frame();
+		scene.input(-1);
+		for (let i = 0; i < 6; i++) scene.frame();
+	});
+	const returned = await screenSnowPoints(page);
+	const after = await page.evaluate(() => (window as HarnessWindow).bufferedScene.read());
+	expect(points.length).toBeGreaterThan(5);
+	expect(screenDisplacement(points, returned)).toBeLessThan(0.0001);
+	expect(after.time).toBe(held.diagnostics.time);
+	expect(after.layerTimes).toEqual(held.diagnostics.layerTimes);
+	const jumps = await page.evaluate(() => {
+		const scene = (window as HarnessWindow).bufferedScene;
+		const coverage: Geometry[] = [];
+		for (const top of [4000, 0, 3000, 0]) {
+			scene.input(top - scrollY);
+			coverage.push(scene.geometry());
+			for (let i = 0; i < 6; i++) scene.frame();
+			coverage.push(scene.geometry());
+		}
+		return { coverage, diagnostics: scene.read(), anchor: scene.presentation().scrollTop };
+	});
+	for (const geometry of jumps.coverage) expectCoverage(geometry);
+	expect(jumps.diagnostics.time).toBe(held.diagnostics.time);
+	expect(jumps.diagnostics.layerTimes).toEqual(held.diagnostics.layerTimes);
+	expect(jumps.anchor).toBe(0);
+});
+
 test('buffered scrolling keeps capture cadence, reverses immediately and bounds buffer allocation', async ({
 	page
 }) => {
@@ -312,9 +364,7 @@ test('buffered scrolling keeps capture cadence, reverses immediately and bounds 
 		expect(result.final[key]).toBe(result.initial[key]);
 });
 
-test('reanchoring a held frame absorbs native movement without moving visible snow', async ({
-	page
-}) => {
+test('pause and resume reanchor pending native travel without a visible jump', async ({ page }) => {
 	await mountScene(page);
 	const result = await page.evaluate(() => {
 		const scene = (window as HarnessWindow).bufferedScene;
@@ -337,18 +387,19 @@ test('reanchoring a held frame absorbs native movement without moving visible sn
 		// No clock tick: only the native movement needs to enter the held image.
 		scene.api.setPaused(true);
 		const fixed = positions();
-		scene.input(1200);
+		scene.input(8);
+		const scrolled = positions().filter((p) => p.x > 10 && p.x < 230 && p.y > 10 && p.y < 170);
 		scene.api.setPaused(false);
 		const resumed = positions();
-		const errors = (current: typeof fixed) =>
-			moving.map((before) => {
+		const errors = (beforePoints: typeof fixed, current: typeof fixed) =>
+			beforePoints.map((before) => {
 				const after = current.find((p) => p.id === before.id && p.generation === before.generation);
 				return after ? Math.hypot(after.x - before.x, after.y - before.y) : Infinity;
 			});
 		return {
 			count: moving.length,
-			pauseError: Math.max(...errors(fixed)),
-			resumeError: Math.max(...errors(resumed))
+			pauseError: Math.max(...errors(moving, fixed)),
+			resumeError: Math.max(...errors(scrolled, resumed))
 		};
 	});
 	expect(result.count).toBeGreaterThan(5);
@@ -358,7 +409,7 @@ test('reanchoring a held frame absorbs native movement without moving visible sn
 	).toBeLessThan(0.0001);
 	expect(
 		result.resumeError,
-		'Travel while paused does not move the resumed photograph'
+		'Resume keeps the native pan already visible in the paused photograph'
 	).toBeLessThan(0.0001);
 });
 
@@ -584,7 +635,7 @@ test('buffer exhaustion and large reverse jumps retain coverage and recapture at
 	).toBeGreaterThanOrEqual(3);
 });
 
-test('pause and reduced motion freeze native transport while theme changes preserve the buffer', async ({
+test('paused and reduced-motion scenes keep native transport without advancing film time', async ({
 	page
 }) => {
 	await mountScene(page);
@@ -595,6 +646,7 @@ test('pause and reduced motion freeze native transport while theme changes prese
 		scene.api.canvas.dataset.sentinel = 'same-canvas';
 		return scene.geometry();
 	});
+	const before = await page.evaluate(() => (window as HarnessWindow).bufferedScene.read());
 	const frozen = createHash('sha256')
 		.update(await page.screenshot())
 		.digest('hex');
@@ -606,7 +658,22 @@ test('pause and reduced motion freeze native transport while theme changes prese
 		createHash('sha256')
 			.update(await page.screenshot())
 			.digest('hex')
-	).toBe(frozen);
+	).not.toBe(frozen);
+	const transported = await page.evaluate(() => (window as HarnessWindow).bufferedScene.read());
+	expect(transported.time).toBe(before.time);
+	expect(transported.layerTimes).toEqual(before.layerTimes);
+	expect(transported.scroll.cameraPosition).toBeGreaterThan(before.scroll.cameraPosition);
+	expect(
+		transported.performance.renderSamples - before.performance.renderSamples
+	).toBeLessThanOrEqual(6);
+	const idle = await page.evaluate(() => {
+		const scene = (window as HarnessWindow).bufferedScene;
+		const first = scene.read();
+		for (let i = 0; i < 60; i++) scene.frame();
+		return { first, last: scene.read() };
+	});
+	expect(idle.last.performance.renderSamples).toBe(idle.first.performance.renderSamples);
+	expect(idle.last.time).toBe(idle.first.time);
 	const themed = await page.evaluate(() => {
 		const scene = (window as HarnessWindow).bufferedScene;
 		scene.api.update({
@@ -660,5 +727,5 @@ test('pause and reduced motion freeze native transport while theme changes prese
 		createHash('sha256')
 			.update(await page.screenshot())
 			.digest('hex')
-	).toBe(reduced);
+	).not.toBe(reduced);
 });

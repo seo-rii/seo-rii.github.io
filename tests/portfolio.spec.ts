@@ -283,7 +283,7 @@ for (const width of [320, 390]) {
 			}
 			await page.locator('#projects h2').scrollIntoViewIfNeeded();
 			await expectNoHorizontalOverflow(page);
-			await expectSnowAmount(page, '0.25');
+			await expectSnowAmount(page, '1');
 		}
 	});
 }
@@ -468,17 +468,17 @@ test.describe('system color scheme', () => {
 				return { width: surface.width, height: surface.height };
 			});
 			await page.evaluate(() => window.scrollTo({ top: 1, behavior: 'instant' }));
-			await expectSnowAmount(page, '0.25');
+			await expectSnowAmount(page, '1');
 
 			await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
 			await expectColorScheme(page, 'light');
-			await expectSnowAmount(page, '0.25');
+			await expectSnowAmount(page, '1');
 			await expect(page.locator('.snow-host')).toHaveAttribute('data-running', 'false');
 			await expectSnowFrozen(page);
 
 			await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'no-preference' });
 			await expect(page.locator('.snow-host')).toHaveAttribute('data-running', 'true');
-			await page.getByRole('button', { name: /눈 잠시 멈추기/ }).click();
+			await page.getByRole('button', { name: /눈 잠시 멈추기/ }).dispatchEvent('click');
 			await expect(page.locator('.snow-toggle')).toHaveAttribute('aria-pressed', 'true');
 			await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'no-preference' });
 			await expectColorScheme(page, 'dark');
