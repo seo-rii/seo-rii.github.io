@@ -50,10 +50,13 @@ request links to the downloadable artifact in this directory.
 - The renderer paints a 128-logical-pixel margin above and below the viewport.
   A clipped sticky surface scrolls that cached image with the document between
   the preset's 12fps captures. It recenters the reusable margin when the next
-  picture is presented; exhausting the margin holds its edge until that capture.
+  picture is presented. If a large scroll exhausts the margin, that capture
+  retains the displacement already shown at the edge and discards the excess
+  travel. It does not jump to catch up with an unseen part of the gesture.
   Scrolling therefore responds without a full redraw or a JavaScript animation
-  frame. Buffered scroll moves the whole picture at the document's 1:1 rate;
-  individual snow depths and clouds keep their ordinary animated motion.
+  frame. Within the cache, the whole picture moves at the document's 1:1 rate;
+  larger bursts move the decorative background by the available reserve.
+  Individual snow depths and clouds keep their ordinary animated motion.
   `scrollBlur: 0` avoids expensive speed-dependent exposure while preserving
   the preset's normal falling-snow blur.
 - The top of the document uses the original `snowAmount: 1`. Any scroll below

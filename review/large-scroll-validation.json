@@ -1,0 +1,141 @@
+{
+	"purpose": "Reduce the visible catch-up jump when a buffered scroll exceeds the cached reserve.",
+	"baseCommit": "6866eda7387451c1216c3a8be9c3c75d4b894bc8",
+	"sourceSha256": {
+		"vendor/ink-snow/engine.js": "ca6b271d64e5daf87b23acf47f254844ed204150e377f45757e419ca9dcd10c3",
+		"src/components/SnowBackground.svelte": "6b68c763912351912ca8695069222e1dbcaaf02b133f27d002c9c7585161f8f8",
+		"src/lib/snow-settings.json": "7431b7128772a78c65701404ee6df44028cab9927ec11a8bdfebe4b61d751b02",
+		"src/components/Portfolio.svelte": "591d04d1529205aa6096f3442d5999184c2d33054fc0237ab3f2f785790b2823",
+		"tests/snow-buffered.spec.ts": "43061088ebb873fc881fdcab8aea0ad856e1a02bea59286a1cbea6008f346f63",
+		"review/seorii-preview.html": "c2ecb1e8bbd24057a68fca2579fd973b851c3eb85a32d916900cc4600c9a53f3"
+	},
+	"behavior": {
+		"bufferedTravel": "Clamp total travel relative to the last presented frame anchor; discard unseen overshoot.",
+		"smallScroll": "Immediate native 1:1 cached transport within the reserve.",
+		"clouds": "Apply the same accepted displacement as snow.",
+		"scrollContainer": "Reanchor the held frame to the new scroll origin without advancing scene time.",
+		"captureFps": 12,
+		"renderPaddingLogicalPx": 128,
+		"unchanged": [
+			"raster dimensions",
+			"particle reservoir",
+			"original snow settings JSON",
+			"legacy nonbuffered scroll behavior"
+		],
+		"limitation": "The cached plane can still hold at its reserve edge until the next capture; this change removes the subsequent catch-up jump."
+	},
+	"regression": {
+		"baseline": {
+			"passed": false,
+			"failedAssertion": "screenDisplacement < 0.02 CSS px",
+			"actualCssPx": 21.912366592770383,
+			"test": "large scroll bursts reanchor the already visible held scene without a catch-up jump"
+		},
+		"candidateAssertions": [
+			"Visible held particle reprojection error remains below 0.02 CSS px across large bursts and reversals.",
+			"Small eight-pixel scrolling remains immediate after a burst.",
+			"Cloud travel matches accepted snow travel with no deferred catch-up.",
+			"Changing the scroll container rebases the held frame without moving scene time.",
+			"Large running bursts keep 11-13 captures over 60 simulated display frames.",
+			"Paused scene time and layer samples stay fixed; backing dimensions and canvas count remain unchanged."
+		]
+	},
+	"checks": {
+		"typecheck": {
+			"errors": 0,
+			"warnings": 0
+		},
+		"lint": "passed",
+		"productionBuild": "passed",
+		"standaloneBuild": "passed",
+		"focusedBufferedSuite": {
+			"startTime": "2026-11-13T05:04:54.779Z",
+			"duration": 33454.090000000004,
+			"expected": 12,
+			"skipped": 0,
+			"unexpected": 0,
+			"flaky": 0
+		},
+		"initialFullSuite": {
+			"startTime": "2026-11-13T05:08:03.772Z",
+			"duration": 289462.14200000005,
+			"expected": 45,
+			"skipped": 9,
+			"unexpected": 1,
+			"flaky": 0
+		},
+		"initialFullSuiteFailure": {
+			"test": "production: manual themes persist until the system changes and preserve active or paused snow",
+			"location": "tests/theme-toggle.spec.ts:172",
+			"description": "After reload, expected the stored light theme but received dark. The theme implementation is unchanged by this patch.",
+			"followUp": "All five theme-toggle tests passed on a separate rerun without source changes. The initial failure is retained as an intermittent validation result; no cause is claimed."
+		},
+		"themeToggleRerunWithoutSourceChanges": {
+			"startTime": "2026-11-13T05:15:13.862Z",
+			"duration": 90718.24399999999,
+			"expected": 5,
+			"skipped": 0,
+			"unexpected": 0,
+			"flaky": 0
+		},
+		"commands": [
+			"pnpm check",
+			"pnpm lint",
+			"pnpm build",
+			"pnpm review:build",
+			"pnpm exec playwright test",
+			"pnpm exec playwright test tests/theme-toggle.spec.ts",
+			"pnpm exec playwright test tests/theme-transition.spec.ts"
+		],
+		"environment": {
+			"browser": "Chromium 158.0.8127.18",
+			"workers": 1,
+			"note": "Temporary Playwright config preserved the project settings and used /dev/shm for test output; source hashes stayed fixed."
+		},
+		"remainingThemeTransitionSuite": {
+			"startTime": "2026-11-13T05:17:07.711Z",
+			"duration": 52534.468,
+			"expected": 5,
+			"skipped": 0,
+			"unexpected": 0,
+			"flaky": 0
+		},
+		"coverage": {
+			"uniqueScenariosPassed": 55,
+			"uniqueScenarios": 55,
+			"unexecutedScenarios": 0,
+			"initialUnexpectedFailures": 1,
+			"note": "Coverage combines 45 passes in the initial full run with five theme-toggle rerun passes and five previously unexecuted theme-transition passes. It is not a single uninterrupted all-green run."
+		}
+	},
+	"review": {
+		"independentCodeReview": "No must-fix issues found; residual cache-edge hold documented.",
+		"themeFailureReadOnlyReview": "The unchanged theme bootstrap and Portfolio own root theme and storage updates; the modified engine does not write either. No direct causal path from this patch was found, and no specific cause of the intermittent initial failure is claimed."
+	},
+	"rendering": {
+		"browser": "158.0.8127.18",
+		"viewport": {
+			"width": 390,
+			"height": 844
+		},
+		"offline": true,
+		"clock": "60Hz deterministic steps; paused simulation, native scroll and 12fps held-frame capture",
+		"method": "Same frozen scene and inputs in the baseline and candidate offline standalone HTML. Text hidden with visibility only to retain page layout and isolate background movement.",
+		"runtimeErrors": 0,
+		"networkRequests": 0,
+		"initialAndCachedEdgeFramesByteIdentical": true,
+		"scrollPositionsCssPx": [600, 1200, 2000, 1200, 600, 0],
+		"comparison": {
+			"file": "review/large-scroll-comparison.gif",
+			"bytes": 1833592,
+			"sha256": "9b53d6282b7ea412c365be8b348a700406ebb243f0386571ff614c5d46e3d16e",
+			"description": "Left: base commit; right: candidate. Selected captures are slowed for comparison."
+		},
+		"standalone": {
+			"file": "review/seorii-preview.html",
+			"bytes": 492611,
+			"sha256": "c2ecb1e8bbd24057a68fca2579fd973b851c3eb85a32d916900cc4600c9a53f3",
+			"selfContained": true
+		}
+	}
+}
