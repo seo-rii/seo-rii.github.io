@@ -1,0 +1,34 @@
+{
+  "validation_scope": "Merged #6/#7 dependencies and #8 theme changes; these inputs are byte-identical to the isolated 52-test integration run.",
+  "base_commit": "bee9e425eee9011aeb7652215f9d17d8e86b5c23",
+  "checks": [
+    "pnpm check: 0 errors, 0 warnings",
+    "pnpm lint",
+    "pnpm build",
+    "pnpm review:build"
+  ],
+  "playwright": {
+    "startTime": "2026-11-13T03:52:56.380Z",
+    "duration": 322192.57800000004,
+    "expected": 52,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "source_sha256": {
+    "src/components/Portfolio.svelte": "591d04d1529205aa6096f3442d5999184c2d33054fc0237ab3f2f785790b2823",
+    "src/components/SnowBackground.svelte": "6b68c763912351912ca8695069222e1dbcaaf02b133f27d002c9c7585161f8f8",
+    "src/app.css": "1ae843e79255816c6b83bee032480442dc8bb17e586a1267552987bf9831b252",
+    "src/app.html": "62862c8a008e0ce9a75e2856815d63560163da1d4c7f4890ca2eba90734f589e",
+    "src/lib/snow-settings.json": "7431b7128772a78c65701404ee6df44028cab9927ec11a8bdfebe4b61d751b02",
+    "vendor/ink-snow/engine.js": "97cf515ad3ce47750158ed86040ece48b84de477cf382cc87ea2198fbcaca5b0",
+    "vendor/ink-snow/engine.d.ts": "433fdc13650e7c6e6c57b2ea5bdf90b0cae2ccd25d743af478e0a4db66721b75",
+    "tests/theme-transition.spec.ts": "7037e9d7356e95efea491ed32a3bdeb9163be4895d3d360788aeda3157e9cd79",
+    "review/seorii-preview.html": "bd6690437f5a68f1e728eb582297b283068356b05f584b2397a93f3ec45bc446"
+  },
+  "standalone": {
+    "path": "review/seorii-preview.html",
+    "bytes": 492485,
+    "sha256": "bd6690437f5a68f1e728eb582297b283068356b05f584b2397a93f3ec45bc446"
+  }
+}

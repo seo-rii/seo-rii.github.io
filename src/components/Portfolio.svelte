@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import Ko from '../routes/Ko.svelte';
 	import En from '../routes/En.svelte';
 	import SnowBackground from './SnowBackground.svelte';
@@ -9,7 +9,9 @@
 	type ColorScheme = 'light' | 'dark';
 	let language = $state<Language>('ko');
 	let colorScheme = $state<ColorScheme | null>(null);
-	let selectedScheme: ColorScheme | null = null;
+	let requestedScheme: ColorScheme | null = null;
+	let themeTransition: ViewTransition | null = null;
+	let themeRequest = 0;
 	let snowPaused = $state(false);
 	let reducedMotion = $state(false);
 	const copy = {
@@ -72,19 +74,58 @@
 		}
 	}
 
-	function applyColorScheme(next: ColorScheme) {
-		colorScheme = next;
-		document.documentElement.dataset.theme = next;
-		for (const meta of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
-			meta.content = next === 'dark' ? '#101923' : '#ffffff';
+	function applyColorScheme(next: ColorScheme, animate = false) {
+		requestedScheme = next;
+		const request = ++themeRequest;
+		themeTransition?.skipTransition();
+		themeTransition = null;
+		const root = document.documentElement;
+		delete root.dataset.themeTransition;
+		if (colorScheme === next && root.dataset.theme === next) return;
+		const apply = () => {
+			// A skipped transition can still call its update callback later.
+			if (request !== themeRequest) return;
+			colorScheme = next;
+			root.dataset.theme = next;
+			for (const meta of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
+				meta.content = next === 'dark' ? '#101923' : '#ffffff';
+			}
+		};
+		if (!animate || reducedMotion || document.hidden || !document.startViewTransition) {
+			apply();
+			return;
+		}
+		try {
+			root.dataset.themeTransition = 'true';
+			const transition = document.startViewTransition(async () => {
+				apply();
+				// Flush the snow palette effect before the browser captures the new view.
+				await tick();
+			});
+			themeTransition = transition;
+			void transition.ready.catch(() => {});
+			void transition.updateCallbackDone.catch(apply);
+			const clear = () => {
+				if (themeTransition !== transition) return;
+				themeTransition = null;
+				delete root.dataset.themeTransition;
+			};
+			void transition.finished.then(clear, clear);
+		} catch {
+			delete root.dataset.themeTransition;
+			apply();
 		}
 	}
 
 	function toggleColorScheme() {
-		selectedScheme = colorScheme === 'dark' ? 'light' : 'dark';
-		applyColorScheme(selectedScheme);
+		const next = (requestedScheme ?? colorScheme) === 'dark' ? 'light' : 'dark';
+		applyColorScheme(next, true);
 		try {
-			localStorage.setItem('seorii-theme', selectedScheme);
+			localStorage.setItem('seorii-theme', next);
+			localStorage.setItem(
+				'seorii-theme-system',
+				window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+			);
 		} catch {
 			/* The selection still works for this page when storage is blocked. */
 		}
@@ -106,24 +147,41 @@
 					: 'en';
 		document.documentElement.lang = language;
 		const themePreference = window.matchMedia('(prefers-color-scheme: dark)');
-		try {
-			const stored = localStorage.getItem('seorii-theme');
-			selectedScheme = stored === 'light' || stored === 'dark' ? stored : null;
-		} catch {
-			/* Use the system preference until a theme is selected on this page. */
-		}
-		const updateColorScheme = () => {
-			applyColorScheme(selectedScheme ?? (themePreference.matches ? 'dark' : 'light'));
+		const root = document.documentElement;
+		const synchronizeSystem = (animate: boolean) => {
+			const next = themePreference.matches ? 'dark' : 'light';
+			root.dataset.themeSystem = next;
+			try {
+				localStorage.removeItem('seorii-theme');
+				localStorage.setItem('seorii-theme-system', next);
+			} catch {
+				/* The live system preference still applies when storage is blocked. */
+			}
+			applyColorScheme(next, animate);
 		};
-		updateColorScheme();
+		const system = themePreference.matches ? 'dark' : 'light';
+		const bootstrapSystem = root.dataset.themeSystem;
+		if ((bootstrapSystem === 'light' || bootstrapSystem === 'dark') && bootstrapSystem !== system) {
+			// The OS may change while the app's JavaScript is still loading.
+			synchronizeSystem(false);
+		} else {
+			const initialTheme = root.dataset.theme;
+			applyColorScheme(initialTheme === 'light' || initialTheme === 'dark' ? initialTheme : system);
+		}
+		const updateColorScheme = () => synchronizeSystem(true);
 		themePreference.addEventListener('change', updateColorScheme);
 		const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
 		const updateMotion = () => {
 			reducedMotion = preference.matches;
+			if (reducedMotion && requestedScheme) applyColorScheme(requestedScheme);
 		};
 		updateMotion();
 		preference.addEventListener('change', updateMotion);
 		return () => {
+			themeRequest++;
+			themeTransition?.skipTransition();
+			themeTransition = null;
+			delete document.documentElement.dataset.themeTransition;
 			preference.removeEventListener('change', updateMotion);
 			themePreference.removeEventListener('change', updateColorScheme);
 		};

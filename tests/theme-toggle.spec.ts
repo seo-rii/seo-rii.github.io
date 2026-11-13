@@ -117,7 +117,7 @@ async function expectReadingState(page: Page, paused: boolean) {
 }
 
 for (const target of ['production', 'standalone'] as const) {
-	test(`${target}: explicit theme overrides OS, persists and preserves active or paused snow`, async ({
+	test(`${target}: manual themes persist until the system changes and preserve active or paused snow`, async ({
 		page,
 		context
 	}) => {
@@ -147,8 +147,10 @@ for (const target of ['production', 'standalone'] as const) {
 			activeBuffer
 		);
 		await page.emulateMedia({ colorScheme: 'light' });
-		await page.emulateMedia({ colorScheme: 'dark' });
 		await expectTheme(page, 'light');
+		expect(await page.evaluate(() => localStorage.getItem('seorii-theme'))).toBeNull();
+		await page.emulateMedia({ colorScheme: 'dark' });
+		await expectTheme(page, 'dark');
 
 		await page.locator('.snow-toggle').dispatchEvent('click');
 		// Keep the header visible while retaining the below-top reading amount.
@@ -157,22 +159,26 @@ for (const target of ['production', 'standalone'] as const) {
 		const pausedBuffer = await canvasState(page);
 		await expectReadingState(page, true);
 		await page.getByRole('button', { name: '다크 모드', exact: true }).dispatchEvent('click');
-		await expectTheme(page, 'dark');
+		await expectTheme(page, 'light');
 		await expectReadingState(page, true);
 		expect(await canvasState(page), 'A theme choice preserves the held buffer and canvas').toEqual(
 			pausedBuffer
 		);
-		expect(await page.evaluate(() => localStorage.getItem('seorii-theme'))).toBe('dark');
+		expect(await page.evaluate(() => localStorage.getItem('seorii-theme'))).toBe('light');
 		await page.getByRole('button', { name: 'English', exact: true }).click();
-		await expectTheme(page, 'dark', 'en');
-		await page.emulateMedia({ colorScheme: 'light' });
+		await expectTheme(page, 'light', 'en');
 		await page.reload();
 		await expectSnowReady(page);
+		await expectTheme(page, 'light', 'en');
+		await page.emulateMedia({ colorScheme: 'light' });
+		await expectTheme(page, 'light', 'en');
+		expect(await page.evaluate(() => localStorage.getItem('seorii-theme'))).toBeNull();
+		await page.emulateMedia({ colorScheme: 'dark' });
 		await expectTheme(page, 'dark', 'en');
 	});
 }
 
-test('both artifacts apply stored themes before hydration and ignore invalid storage values', async ({
+test('both artifacts resolve saved and changed system themes before hydration', async ({
 	page,
 	context
 }) => {
@@ -192,21 +198,34 @@ test('both artifacts apply stored themes before hydration and ignore invalid sto
 	});
 	for (const target of ['production', 'standalone'] as const) {
 		await openTarget(page, context, target);
-		for (const [saved, system, expected] of [
-			['light', 'dark', 'light'],
-			['dark', 'light', 'dark'],
-			['not-a-theme', 'dark', 'dark']
+		for (const [saved, system, previousSystem, expected] of [
+			['light', 'dark', 'dark', 'light'],
+			['dark', 'light', 'light', 'dark'],
+			['dark', 'light', 'dark', 'light'],
+			['light', 'dark', 'light', 'dark'],
+			['light', 'dark', null, 'light'],
+			['not-a-theme', 'dark', 'dark', 'dark']
 		] as const) {
-			await page.evaluate((theme) => localStorage.setItem('seorii-theme', theme), saved);
+			await page.evaluate(
+				({ theme, previousSystem }) => {
+					localStorage.setItem('seorii-theme', theme);
+					if (previousSystem === null) localStorage.removeItem('seorii-theme-system');
+					else localStorage.setItem('seorii-theme-system', previousSystem);
+				},
+				{ theme: saved, previousSystem }
+			);
+			// Change the OS after leaving the app: no live listener can clear the
+			// stored choice, so this specifically exercises the head bootstrap.
+			await page.goto('about:blank');
 			await page.emulateMedia({ colorScheme: system });
-			await page.reload();
-			await expectSnowReady(page);
+			await openTarget(page, context, target);
 			const firstBody = await page.evaluate(() => (window as BootstrapWindow).__themeAtBody);
 			expect(firstBody?.snowReady, `${target} probe precedes snow mounting`).not.toBe('true');
 			expect(firstBody?.theme, `${target} bootstrap applies ${saved} before hydration`).toBe(
 				expected
 			);
 			await expectTheme(page, expected);
+			expect(await page.evaluate(() => localStorage.getItem('seorii-theme-system'))).toBe(system);
 			if (saved === 'not-a-theme') {
 				await page.emulateMedia({ colorScheme: 'light' });
 				await expectTheme(page, 'light');
@@ -237,10 +256,11 @@ test('both artifacts remain usable when storage reads and writes throw', async (
 		await page.getByRole('button', { name: '다크 모드', exact: true }).click();
 		await expectTheme(page, 'light');
 		await page.emulateMedia({ colorScheme: 'light' });
-		await page.emulateMedia({ colorScheme: 'dark' });
 		await expectTheme(page, 'light');
-		await page.getByRole('button', { name: '다크 모드', exact: true }).click();
+		await page.emulateMedia({ colorScheme: 'dark' });
 		await expectTheme(page, 'dark');
+		await page.getByRole('button', { name: '다크 모드', exact: true }).click();
+		await expectTheme(page, 'light');
 		await expect(page.locator('.snow-background')).toHaveAttribute('data-paused', 'true');
 		await expect(page.locator('.snow-host')).toHaveAttribute('data-running', 'false');
 	}
