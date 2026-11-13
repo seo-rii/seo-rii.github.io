@@ -36,7 +36,7 @@
 		// Read both inputs even while manually paused. Synchronize the imperative
 		// renderer; this does not assign any Svelte state.
 		const motionPreference = reducedMotion;
-		api?.setPaused(paused || motionPreference);
+		api?.setPaused(paused || motionPreference, { duration: motionPreference ? 0 : 400 });
 	});
 
 	$effect(() => {

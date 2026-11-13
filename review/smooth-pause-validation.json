@@ -1,0 +1,40 @@
+{
+  "base_commit": "4728f6e79c89ffd5e50f9fe8c09b99d44adcc435",
+  "browser": "Chromium 158.0.8127.18",
+  "checks": [
+    "pnpm check: 0 errors, 0 warnings",
+    "pnpm lint",
+    "pnpm build",
+    "pnpm review:build"
+  ],
+  "playwright": {
+    "unique_tests_verified": 42,
+    "full_run": {
+      "startTime": "2026-11-13T02:59:56.409Z",
+      "duration": 343399.85199999996,
+      "expected": 41,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    "isolated_navigation_recheck": {
+      "startTime": "2026-11-13T03:06:22.177Z",
+      "duration": 32424.16,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "note": "The navigation test reached the 45s suite limit during concurrent verification; the unchanged source passed when that test was run alone."
+  },
+  "source_sha256": {
+    "vendor/ink-snow/engine.js": "8f4581ddf836d58db75a1e4f251570d420b5b8007ba587fe50dd826e4b02ea88",
+    "src/components/SnowBackground.svelte": "b9cacf83c945a77728f351db1a95b389a98691715452deaeafc0c184b1f3aeaf"
+  },
+  "standalone": {
+    "path": "review/seorii-preview.html",
+    "bytes": 489987,
+    "sha256": "a911df90a1bf6fcd97ee1c59f5a05be48fadb48fe5c405b90050b266543b41c0",
+    "offline_capture_errors": []
+  }
+}

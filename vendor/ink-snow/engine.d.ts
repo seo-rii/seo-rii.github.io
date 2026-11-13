@@ -18,7 +18,8 @@ export interface InkSnowAPI {
   downloadHTML(filename?:string):Promise<void>;
   importJSON(json:string|object):InkSnowSettings;
   downloadSettings(filename?:string):void;
-  setPaused(value:boolean):void;
+  /** Optional duration in milliseconds eases the scene clock; omitted means immediate. */
+  setPaused(value:boolean,options?:{duration?:number}):void;
   readonly paused:boolean;
   setControls(value:boolean):void;
   setScrollContainer(target?:Window|HTMLElement|null):void;

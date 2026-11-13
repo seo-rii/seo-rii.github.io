@@ -613,6 +613,9 @@ void main(){
   const displayedParticles=new Map();
   let observing=false,tracked=null,trackedGeneration=-1,lastInspect=-1;
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');let paused=typeof options.paused==='boolean'?options.paused:reduced.matches;
+  // Manual easing changes the simulation clock, not particle settings or opacity.
+  // The settled pause flag keeps its existing immediate-API and scroll meaning.
+  let motionRate=paused?0:1,pauseTransition=null,pauseCaptureMs=0,pauseSampleFloor=0;
   const random=rng(4567),flakes=[];
   const grainFrames=[],grainSamples=[];
   for(let k=0;k<8;k++){
@@ -1463,7 +1466,8 @@ function compactSpriteBasis(p,motion){
   const extraShortWeights=shortWeights.subarray(particleCount);
   let shortAutoOrigin=0,effectiveShortExposure=settings.shortExposure;
   function shortSampleTime(time=elapsed){
-    return settings.fps>0?captureOrigin+Math.floor((time-captureOrigin)*settings.fps+1e-8)/settings.fps:time;
+    if(pauseTransition||settings.fps<=0)return time;
+    return Math.max(pauseSampleFloor,captureOrigin+Math.floor((time-captureOrigin)*settings.fps+1e-8)/settings.fps);
   }
   function shortAmplitude(){return Math.min(.25,settings.shortExposure,1-settings.shortExposure);}
   function shortRatioAt(time=elapsed){
@@ -1949,11 +1953,11 @@ function compactSpriteBasis(p,motion){
     return changed;
   }
   function drawCachedBackground(){
-    const rate=settings.fps||60,tick=Math.floor((elapsed-captureOrigin)*rate+1e-8);
-    const key=[canvas.width,canvas.height,tick,captureOrigin,settings.background,settings.cloudMorph,settings.finish,settings.shaderStrength,settings.flow,settings.pigment,scrollCloudY,Math.round(cloudScrollTrace()*1000)].join('/');
+    const sampleTime=shortSampleTime();
+    const key=[canvas.width,canvas.height,sampleTime,captureOrigin,settings.background,settings.cloudMorph,settings.finish,settings.shaderStrength,settings.flow,settings.pigment,scrollCloudY,Math.round(cloudScrollTrace()*1000)].join('/');
     if(key!==backgroundCacheKey){
       const savedTime=backgroundTime,savedCtx=ctx;
-      filmSampleTime=captureOrigin+tick/rate;
+      filmSampleTime=sampleTime;
       // A rate edit starts at the last visible wash, not an unseen fractional
       // physics state. Older held film ticks reuse that phase; new ticks move
       // forward from the edit time without extrapolating the new rate backward.
@@ -2309,6 +2313,7 @@ function compactSpriteBasis(p,motion){
   }
   function resetCadence(){
     captureOrigin=elapsed;captureIndex=0;historyValid=false;captureReady=false;transitionReady=false;
+    pauseSampleFloor=0;
     presentationTime=NaN;presentationPoses=[];
     backgroundCacheKey='';invalidateLayers();
   }
@@ -2320,8 +2325,18 @@ function compactSpriteBasis(p,motion){
     const cloudChanged=updateScrollEffects(now,cameraChanged);
     let captured=false;
     if(last){
-      const target=elapsed+Math.min(.2,Math.max(0,(now-last)/1000));
-      if(isStaggered()){
+      const target=elapsed+pauseClockSeconds(Math.max(last,now-200),now);
+      if(pauseTransition){
+        // Slow the pose clock without slowing the display cadence as well.
+        // Keep full captures at the configured wall-clock fps, never at rAF fps.
+        if(isStaggered())advanceLayerSchedule(target);else advanceTo(target);
+        const interval=1000/(settings.fps||60);
+        if(now-pauseCaptureMs+1e-5>=interval){
+          pauseCaptureMs=now;
+          captureIndex=Math.floor((target-captureOrigin)*(settings.fps||60)+1e-7);
+          render();captured=true;
+        }
+      }else if(isStaggered()){
         const due=Math.floor((target-captureOrigin)*settings.fps+1e-7);
         if(due>captureIndex){
           // Sample all display poses at the exact film tick, before physics
@@ -2344,11 +2359,19 @@ function compactSpriteBasis(p,motion){
     if(scrollFrameDue&&(cameraChanged||cloudChanged||renderedScrollEffects!==scrollEffectKey())&&!captured){render(false,true);captured=true;}
     if(captured||(!isStaggered()&&settings.temporal==='soft'&&settings.fps>0&&transitionReady))presentOutput(elapsed);
     if(cameraChanged&&Number.isFinite(scrollInputMs))lastScrollResponseMs=window.performance.now()-scrollInputMs;
+    if(pauseTransition&&now>=pauseTransition.start+pauseTransition.duration){
+      const stop=pauseTransition.to===0;
+      // A fractional eased sample must not jump back to the previous film tick.
+      pauseSampleFloor=Math.max(pauseSampleFloor,Number.isFinite(presentationTime)?presentationTime:elapsed);
+      pauseTransition=null;motionRate=stop?0:1;
+      if(stop){setPausedImmediately(true);return;}
+    }
     last=now;raf=requestAnimationFrame(animate);
   }
   function stopAnimation(){if(raf){window.cancelAnimationFrame(raf);raf=0;}last=0;}
   function suspendRendering(reason){
     if(destroyed)return;
+    settlePauseTransition();
     syncBufferedScroll();
     resetScrollMotion();
     suspended=true;recoveryNeeded=true;probeAssets=true;lastRecoveryReason=reason;
@@ -2534,8 +2557,10 @@ function compactSpriteBasis(p,motion){
     }finally{resizing=false;}
   }
   listen(pause,'click',()=>{
-    if(buffered){setPaused(!paused);return;}
-    paused=!paused;last=0;historyValid=false;resetScrollMotion();
+    const next=!(pauseTransition?pauseTransition.to===0:paused);
+    if(buffered){setPaused(next);return;}
+    pauseTransition=null;motionRate=next?0:1;
+    paused=next;last=0;historyValid=false;resetScrollMotion();
     if(paused){if(raf){cancelAnimationFrame(raf);raf=0;}presentOutput(elapsed,true);}
     else if(!isStaggered())resetCadence();
     announce();schedule();
@@ -2737,6 +2762,7 @@ function compactSpriteBasis(p,motion){
   listen(window,'focus',()=>{if(!document.hidden)resumeRendering('focus');});
   if(reduced.addEventListener)listen(reduced,'change',()=>{
     if(buffered){setPaused(reduced.matches);return;}
+    pauseTransition=null;motionRate=reduced.matches?0:1;
     paused=reduced.matches;last=0;if(!isStaggered())resetCadence();if(paused&&raf){cancelAnimationFrame(raf);raf=0;}announce();if(paused)presentOutput(elapsed,true);schedule();
   });
   function clearBackdrop(g){
@@ -2849,8 +2875,47 @@ function compactSpriteBasis(p,motion){
     layerControl.disabled=settings.renderer!=='field';getControl('spread').disabled=settings.renderer!=='field';
     syncTimingControls();syncFinishControls();syncScrollMode();applyLayout();
   }
-  function setPaused(value){
+  function pauseRateAt(now){
+    if(!pauseTransition)return motionRate;
+    const {from,to,start,duration}=pauseTransition;
+    const u=Math.max(0,Math.min(1,(now-start)/duration));
+    return from+(to-from)*u*u*(3-2*u);
+  }
+  function pauseClockSeconds(start,end){
+    if(end<=start)return 0;
+    if(!pauseTransition)return (end-start)*motionRate/1000;
+    const {from,to,start:origin,duration}=pauseTransition;
+    const integral=now=>{
+      const t=(now-origin)/1000,d=duration/1000;
+      if(t<=0)return t*from;
+      const u=Math.min(1,t/d),held=d*u;
+      return from*held+(to-from)*d*(u*u*u-.5*u*u*u*u)+Math.max(0,t-d)*to;
+    };
+    return Math.max(0,integral(end)-integral(start));
+  }
+  function settlePauseTransition(){
+    if(!pauseTransition)return;
+    const stop=pauseTransition.to===0;
+    pauseSampleFloor=Math.max(pauseSampleFloor,Number.isFinite(presentationTime)?presentationTime:elapsed);
+    pauseTransition=null;motionRate=stop?0:1;
+    setPausedImmediately(stop);
+  }
+  function setPaused(value,transition={}){
     if(typeof value!=='boolean')return;
+    const requestedDuration=transition?.duration;
+    const duration=Number.isFinite(requestedDuration)?Math.max(0,requestedDuration):0;
+    if(!duration||reduced.matches||document.hidden||!visible||suspended){
+      if(pauseTransition)pauseSampleFloor=Math.max(pauseSampleFloor,Number.isFinite(presentationTime)?presentationTime:elapsed);
+      pauseTransition=null;motionRate=value?0:1;
+      setPausedImmediately(value);return;
+    }
+    if((pauseTransition?pauseTransition.to===0:paused)===value)return;
+    const now=window.performance.now(),start=last||now,from=pauseRateAt(start);
+    if(paused)setPausedImmediately(false);
+    pauseTransition={from,to:value?0:1,start,duration};motionRate=from;pauseCaptureMs=start;
+    schedule();
+  }
+  function setPausedImmediately(value){
     if(paused===value)return;
     if(buffered){
       if(value)syncBufferedScroll();
@@ -2988,6 +3053,7 @@ function compactSpriteBasis(p,motion){
     get canvas(){return canvas;},
     get foregroundCanvas(){return foregroundCanvas;},
     diagnostics(detail={}){return {aspectMode:settings.aspectMode,readOnly,renderOnly:root.dataset.renderOnly==='true',time:elapsed,width:canvas.width,height:canvas.height,logicalWidth:W,logicalHeight:H,renderTop,renderHeight,renderPadding,frameScrollTop,shader:root.dataset.shader,
+      motion:{rate:pauseRateAt(last||window.performance.now()),targetPaused:pauseTransition?pauseTransition.to===0:paused,transitioning:!!pauseTransition},
       active:flakes.filter(f=>snowIsActive(f)).length,lensCohort:flakes.filter(f=>f.lens&&snowIsActive(f)).length,
       nearVisible:flakes.filter(f=>{if(!f.lens||!snowIsActive(f))return false;const p=projectParticle(f);return p.x>=0&&p.x<W&&p.y>=0&&p.y<H;}).length,
       particles:detail.particles===false?undefined:flakes.filter(f=>snowIsActive(f)).map(f=>({id:f.id,generation:f.generation,lens:f.lens,...projectParticle(f)})),
