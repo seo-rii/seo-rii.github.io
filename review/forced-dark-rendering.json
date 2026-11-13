@@ -1,0 +1,165 @@
+{
+  "artifact": "review/seorii-preview.html",
+  "sha256": "44ef0b10e2d4a7e364b7d2ff91ed2bab87669402a3e5cabeb864e7304228c1df",
+  "browser": "158.0.8127.18",
+  "model": "Chromium forced paint with light media preference; not a Samsung device reproduction",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "offline": true,
+  "reducedMotion": "reduce",
+  "captures": [
+    {
+      "state": "before",
+      "position": "top",
+      "file": "forced-dark-before-top.png",
+      "backdrop": "forced-dark-before-top-background.png",
+      "boxes": [
+        {
+          "selector": "h1",
+          "x": 24,
+          "y": 126,
+          "width": 342,
+          "height": 78.96875
+        }
+      ],
+      "contrast": [
+        {
+          "selector": "h1",
+          "median_ratio": 1.262,
+          "glyph_pixels": 1532,
+          "dominant_color": [
+            204,
+            223,
+            244
+          ]
+        }
+      ]
+    },
+    {
+      "state": "after",
+      "position": "top",
+      "file": "forced-dark-after-top.png",
+      "backdrop": "forced-dark-after-top-background.png",
+      "boxes": [
+        {
+          "selector": "h1",
+          "x": 24,
+          "y": 126,
+          "width": 342,
+          "height": 78.96875
+        }
+      ],
+      "contrast": [
+        {
+          "selector": "h1",
+          "median_ratio": 14.612,
+          "glyph_pixels": 1477,
+          "dominant_color": [
+            204,
+            223,
+            244
+          ]
+        }
+      ]
+    },
+    {
+      "state": "before",
+      "position": "reading",
+      "file": "forced-dark-before-reading.png",
+      "backdrop": "forced-dark-before-reading-background.png",
+      "boxes": [
+        {
+          "selector": "#about h2",
+          "x": 24,
+          "y": 92.5625,
+          "width": 342,
+          "height": 36.96875
+        },
+        {
+          "selector": "#about .prose",
+          "x": 24,
+          "y": 161.53125,
+          "width": 342,
+          "height": 543.90625
+        }
+      ],
+      "contrast": [
+        {
+          "selector": "#about h2",
+          "median_ratio": 3.071,
+          "glyph_pixels": 222,
+          "dominant_color": [
+            197,
+            221,
+            242
+          ]
+        },
+        {
+          "selector": "#about .prose",
+          "median_ratio": 2.265,
+          "glyph_pixels": 5307,
+          "dominant_color": [
+            189,
+            203,
+            220
+          ]
+        }
+      ]
+    },
+    {
+      "state": "after",
+      "position": "reading",
+      "file": "forced-dark-after-reading.png",
+      "backdrop": "forced-dark-after-reading-background.png",
+      "boxes": [
+        {
+          "selector": "#about h2",
+          "x": 24,
+          "y": 92.5625,
+          "width": 342,
+          "height": 36.96875
+        },
+        {
+          "selector": "#about .prose",
+          "x": 24,
+          "y": 161.53125,
+          "width": 342,
+          "height": 543.90625
+        }
+      ],
+      "contrast": [
+        {
+          "selector": "#about h2",
+          "median_ratio": 13.765,
+          "glyph_pixels": 222,
+          "dominant_color": [
+            197,
+            221,
+            242
+          ]
+        },
+        {
+          "selector": "#about .prose",
+          "median_ratio": 11.705,
+          "glyph_pixels": 5307,
+          "dominant_color": [
+            189,
+            203,
+            220
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "network": [],
+  "diagnostics": {
+    "rootTheme": "light",
+    "computedBackground": "rgb(255, 255, 255)",
+    "computedHeading": "rgb(37, 55, 71)",
+    "snowTheme": "light",
+    "prefersDark": false
+  }
+}

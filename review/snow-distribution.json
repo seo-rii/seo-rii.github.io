@@ -1,0 +1,426 @@
+{
+  "description": "Five-minute deterministic simulation of the actual snow physics, with diagnostic counters around natural recycling and viewport entry. Rendering is sampled with the particles renderer; the separate Playwright field-renderer test checks painted output and history after this warmup.",
+  "baselineCommit": "03065c9a8aac01f278e9694202a63647c44c158a",
+  "baselineEngineSha256": "4c5c5dd9eb5c5a4d9b69007765b71c6d92325d6bfa7395cac6ccc20b57ebd4f6",
+  "fixedEngineSha256": "4cabcf9e4d61aa7ef83d71676242efb9469aa411995efdaae5f7b04993ddc55b",
+  "simulationSeconds": 300,
+  "entryMeasurementSeconds": [
+    30,
+    300
+  ],
+  "entryBins": 8,
+  "settings": "src/lib/snow-settings.json",
+  "overrides": {
+    "renderer": "particles",
+    "finish": "none",
+    "film": 0,
+    "background": 0,
+    "scrollMode": "camera",
+    "scrollBlur": 0
+  },
+  "rapidRecycleThresholdSeconds": 0.025,
+  "cases": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "snowAmount": 1,
+      "activeParticles": 277,
+      "before": {
+        "recycles": 410604,
+        "rapidRecycles": 340722,
+        "entries": {
+          "top": [
+            360,
+            376,
+            476,
+            858,
+            829,
+            690,
+            793,
+            774
+          ],
+          "left": [
+            132,
+            185,
+            157,
+            191,
+            224,
+            244,
+            269,
+            281
+          ],
+          "right": [
+            15,
+            20,
+            18,
+            18,
+            27,
+            32,
+            40,
+            37
+          ],
+          "bottom": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "after": {
+        "recycles": 10501,
+        "rapidRecycles": 1,
+        "entries": {
+          "top": [
+            878,
+            786,
+            799,
+            806,
+            832,
+            844,
+            821,
+            900
+          ],
+          "left": [
+            190,
+            173,
+            144,
+            157,
+            165,
+            138,
+            135,
+            126
+          ],
+          "right": [
+            22,
+            19,
+            23,
+            27,
+            55,
+            57,
+            43,
+            55
+          ],
+          "bottom": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "snowAmount": 0.25,
+      "activeParticles": 69,
+      "before": {
+        "recycles": 105487,
+        "rapidRecycles": 88525,
+        "entries": {
+          "top": [
+            90,
+            95,
+            117,
+            208,
+            207,
+            174,
+            187,
+            210
+          ],
+          "left": [
+            30,
+            49,
+            40,
+            44,
+            54,
+            57,
+            60,
+            76
+          ],
+          "right": [
+            3,
+            4,
+            6,
+            8,
+            7,
+            8,
+            9,
+            12
+          ],
+          "bottom": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "after": {
+        "recycles": 2569,
+        "rapidRecycles": 1,
+        "entries": {
+          "top": [
+            229,
+            208,
+            229,
+            202,
+            205,
+            215,
+            220,
+            208
+          ],
+          "left": [
+            47,
+            36,
+            45,
+            28,
+            29,
+            23,
+            32,
+            22
+          ],
+          "right": [
+            4,
+            5,
+            9,
+            8,
+            16,
+            13,
+            11,
+            14
+          ],
+          "bottom": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "snowAmount": 1,
+      "activeParticles": 277,
+      "before": {
+        "recycles": 398865,
+        "rapidRecycles": 305656,
+        "entries": {
+          "top": [
+            70,
+            29,
+            19,
+            45,
+            112,
+            200,
+            300,
+            385
+          ],
+          "left": [
+            478,
+            927,
+            854,
+            390,
+            174,
+            102,
+            65,
+            43
+          ],
+          "right": [
+            2,
+            20,
+            54,
+            74,
+            49,
+            7,
+            3,
+            2
+          ],
+          "bottom": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "after": {
+        "recycles": 5527,
+        "rapidRecycles": 2,
+        "entries": {
+          "top": [
+            382,
+            373,
+            363,
+            367,
+            386,
+            387,
+            370,
+            446
+          ],
+          "left": [
+            285,
+            275,
+            158,
+            102,
+            76,
+            83,
+            76,
+            89
+          ],
+          "right": [
+            1,
+            24,
+            47,
+            97,
+            103,
+            68,
+            18,
+            5
+          ],
+          "bottom": [
+            1,
+            2,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "snowAmount": 0.25,
+      "activeParticles": 69,
+      "before": {
+        "recycles": 100006,
+        "rapidRecycles": 76841,
+        "entries": {
+          "top": [
+            12,
+            6,
+            3,
+            6,
+            23,
+            44,
+            72,
+            87
+          ],
+          "left": [
+            123,
+            229,
+            196,
+            117,
+            45,
+            22,
+            13,
+            7
+          ],
+          "right": [
+            0,
+            7,
+            16,
+            19,
+            17,
+            4,
+            0,
+            0
+          ],
+          "bottom": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "after": {
+        "recycles": 1300,
+        "rapidRecycles": 0,
+        "entries": {
+          "top": [
+            106,
+            98,
+            101,
+            103,
+            98,
+            98,
+            93,
+            107
+          ],
+          "left": [
+            68,
+            51,
+            31,
+            25,
+            18,
+            15,
+            14,
+            23
+          ],
+          "right": [
+            0,
+            2,
+            13,
+            25,
+            18,
+            17,
+            7,
+            4
+          ],
+          "bottom": [
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    }
+  ],
+  "baselineMeasurementCommit": "bc5e5a496a0ff158f3b548dd4995a59f52da2767",
+  "baselineRuntimeEquivalence": "All vendored JavaScript runtime files at the measurement commit are byte-identical to baselineCommit; the diagnostic fixture loads only those files."
+}

@@ -184,7 +184,19 @@ test('leaving the top reduces snow, the hero symbol scrolls away, and section an
 	);
 	await expectSnowAmount(page, '0.25');
 	await expect(page.locator('.hero-symbol img')).not.toBeInViewport();
-	await expect(page.locator('.snow-background')).toHaveCSS('position', 'fixed');
+	await expect
+		.poll(() =>
+			page.locator('.snow-host canvas').evaluate((canvas) => {
+				const box = canvas.getBoundingClientRect();
+				return (
+					box.left <= 0.01 &&
+					box.right >= innerWidth - 0.01 &&
+					box.top <= 0.01 &&
+					box.bottom >= innerHeight - 0.01
+				);
+			})
+		)
+		.toBe(true);
 
 	await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
 	await expectSnowAmount(page, '1');
@@ -333,9 +345,15 @@ test.describe('mobile snow viewport', () => {
 							requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
 						)
 				);
-				await expect(wrapper).toHaveCSS('overflow', 'hidden');
+				await expect(wrapper).toHaveCSS('overflow', 'clip');
 				const clippingBox = await wrapper.boundingBox();
 				expect(clippingBox?.height).toBe(height);
+				const drawingBox = await canvas.boundingBox();
+				expect(drawingBox).not.toBeNull();
+				expect(drawingBox!.y).toBeLessThanOrEqual(clippingBox!.y);
+				expect(drawingBox!.y + drawingBox!.height).toBeGreaterThanOrEqual(
+					clippingBox!.y + clippingBox!.height
+				);
 				const current = await canvas.evaluate((element) => {
 					const tracked = element as TrackedCanvas;
 					return {
@@ -353,6 +371,48 @@ test.describe('mobile snow viewport', () => {
 			}
 
 			await wrapper.evaluate((element) => (element as HTMLElement).style.removeProperty('height'));
+			// Model an open mobile toolbar: the visible viewport shrinks while the
+			// device's maximum drawing height remains unchanged. The sticky holder
+			// must use the visible height, independently of the 100lvh render box.
+			const drawingViewport = page.locator('.snow-viewport');
+			await drawingViewport.evaluate((element) => {
+				(element as HTMLElement).style.height = '844px';
+			});
+			await page.emulateMedia({ reducedMotion: 'no-preference' });
+			await page.setViewportSize({ width: 390, height: 690 });
+			await expect(page.locator('.snow-host')).toHaveAttribute('data-running', 'true');
+			await expect(page.locator('.snow-surface')).toHaveCSS('height', '690px');
+			await page.evaluate(() => window.scrollTo({ top: 200, behavior: 'instant' }));
+			await expectSnowAmount(page, '0.25');
+			await expect
+				.poll(() =>
+					page.locator('.snow-anchor').evaluate((element) => {
+						return parseFloat((element as HTMLElement).style.height) === window.scrollY;
+					})
+				)
+				.toBe(true);
+			const transported = await canvas.evaluate((element) => {
+				const tracked = element as TrackedCanvas;
+				const before = tracked.getBoundingClientRect().y;
+				// Both measurements run before another engine capture can occur.
+				window.scrollBy({ top: 8, behavior: 'instant' });
+				return {
+					movement: tracked.getBoundingClientRect().y - before,
+					size: { width: tracked.width, height: tracked.height },
+					writes: tracked.__snowSizeWrites ?? 0
+				};
+			});
+			expect(
+				transported.movement,
+				'Toolbar visibility does not disable native buffer movement'
+			).toBeCloseTo(-8, 4);
+			expect(transported.size).toEqual(initialSize);
+			expect(transported.writes, 'Toolbar visibility does not reallocate the drawing surface').toBe(
+				0
+			);
+			await drawingViewport.evaluate((element) =>
+				(element as HTMLElement).style.removeProperty('height')
+			);
 			await page.setViewportSize({ width: 844, height: 390 });
 			await expect
 				.poll(() =>
@@ -368,9 +428,9 @@ test.describe('mobile snow viewport', () => {
 			const coverage = await canvas.boundingBox();
 			expect(coverage).not.toBeNull();
 			expect(coverage!.x).toBe(0);
-			expect(coverage!.y).toBe(0);
+			expect(coverage!.y).toBeLessThanOrEqual(0);
 			expect(coverage!.width).toBe(844);
-			expect(coverage!.height).toBe(390);
+			expect(coverage!.y + coverage!.height).toBeGreaterThanOrEqual(390);
 			await expectNoHorizontalOverflow(page);
 			await canvas.evaluate((element) =>
 				(element as TrackedCanvas).__snowResizeObserver?.disconnect()

@@ -37,11 +37,13 @@ export interface InkSnowOptions {
   readOnly?:boolean;
   foregroundRoot?:HTMLElement;
   scrollContainer?:Window|HTMLElement|null;
-  /** Use the configured fps for scroll redraws; defaults to display-rate reprojection. */
-  scrollFrameRate?:'display'|'capture';
+  /** Capture follows fps; buffered adds a native-scroll plane only with aspectMode:'auto'. */
+  scrollFrameRate?:'display'|'capture'|'buffered';
   debug?:boolean;
   onSettingsChange?:(settings:InkSnowSettings)=>void;
   onPausedChange?:(paused:boolean)=>void;
+  /** Called after presentation. scrollTop anchors that bitmap; padding uses CSS pixels. */
+  onPresent?:(frame:{scrollTop:number;padding:number;paused:boolean})=>void;
   onReady?:(api:InkSnowAPI)=>void;
 }
 export function mountInkSnow(root:HTMLElement,options?:InkSnowOptions):InkSnowAPI;

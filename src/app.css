@@ -39,8 +39,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-	/* Preserve the native dark palette before the client resolves auto-darkening. */
-	:root:not([data-color-scheme]) {
+	:root:not([data-theme='light']) {
 		color-scheme: dark;
 		--background: #101923;
 		--ink: #e5eef5;
@@ -67,13 +66,8 @@
 	}
 }
 
-:root[data-color-scheme='light'] {
-	color-scheme: only light;
-}
-
-/* This also covers browsers that darken pages while reporting a light preference. */
-:root[data-color-scheme='dark'] {
-	color-scheme: only dark;
+:root[data-theme='dark'] {
+	color-scheme: dark;
 	--background: #101923;
 	--ink: #e5eef5;
 	--heading: #e5eef5;

@@ -3,23 +3,45 @@
 	import { mountInkSnow } from '../../vendor/ink-snow/engine.js';
 	import type { InkSnowAPI, InkSnowSettings } from '../../vendor/ink-snow/engine.js';
 	import preset from '../lib/snow-settings.json';
-	import { observeColorScheme, type ColorScheme } from '../lib/color-scheme';
 
-	let {
-		paused = false,
-		onColorSchemeChange
-	}: { paused?: boolean; onColorSchemeChange?: (scheme: ColorScheme) => void } = $props();
+	let { paused = false, theme = null }: { paused?: boolean; theme?: 'light' | 'dark' | null } =
+		$props();
 	let host: HTMLDivElement;
+	let surface: HTMLDivElement;
+	let anchor: HTMLDivElement;
 	let api = $state.raw<InkSnowAPI | null>(null);
 	let reducedMotion = $state(false);
 	let snowAmount = $state(preset.settings.snowAmount);
 	let ready = $state(false);
+
+	function themeSettings(
+		selectedTheme: 'light' | 'dark'
+	): Pick<InkSnowSettings, 'theme' | 'snowColor' | 'backgroundColor' | 'washColor'> {
+		return selectedTheme === 'dark'
+			? {
+					theme: 'dark',
+					snowColor: '#e5eff8',
+					backgroundColor: '#101923',
+					washColor: '#355c80'
+				}
+			: {
+					theme: 'light',
+					snowColor: preset.settings.snowColor,
+					backgroundColor: preset.settings.backgroundColor,
+					washColor: preset.settings.washColor
+				};
+	}
 
 	$effect(() => {
 		// Read both inputs even while manually paused. Synchronize the imperative
 		// renderer; this does not assign any Svelte state.
 		const motionPreference = reducedMotion;
 		api?.setPaused(paused || motionPreference);
+	});
+
+	$effect(() => {
+		const selectedTheme = theme;
+		if (selectedTheme) api?.update(themeSettings(selectedTheme));
 	});
 
 	onMount(() => {
@@ -30,51 +52,39 @@
 		let atTop = window.scrollY <= 0;
 		let motionTimer = 0;
 		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-		let colorScheme: ColorScheme = 'light';
-
-		function themeSettings(): Pick<
-			InkSnowSettings,
-			'theme' | 'snowColor' | 'backgroundColor' | 'washColor'
-		> {
-			return colorScheme === 'dark'
-				? {
-						theme: 'dark',
-						snowColor: '#e5eff8',
-						backgroundColor: '#101923',
-						washColor: '#355c80'
-					}
-				: {
-						theme: settings.theme,
-						snowColor: settings.snowColor,
-						backgroundColor: settings.backgroundColor,
-						washColor: settings.washColor
-					};
-		}
-		const stopColorScheme = observeColorScheme((next) => {
-			colorScheme = next;
-			onColorSchemeChange?.(next);
-			api?.update(themeSettings());
-		});
+		const rootTheme = document.documentElement.dataset.theme;
+		const initialTheme =
+			theme ??
+			(rootTheme === 'light' || rootTheme === 'dark' ? rootTheme : null) ??
+			(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
 		reducedMotion = reduced.matches;
 		snowAmount = atTop ? settings.snowAmount : readingSnowAmount;
 		const instance = mountInkSnow(host, {
 			settings: {
 				...settings,
-				...themeSettings(),
+				...themeSettings(initialTheme),
 				scrollMode: 'camera',
 				// Speed-dependent exposure expands CPU kernels and redraws clouds five
 				// times during fast scrolls. Keep the preset's normal falling-snow blur.
 				scrollBlur: 0,
 				snowAmount
 			},
-			// Let document scrolling stay smooth while the backdrop follows its 12fps preset.
-			scrollFrameRate: 'capture',
+			// Scroll the cached overscan with the document. Only new animation
+			// captures rebuild the picture and recenter its reusable margin.
+			scrollFrameRate: 'buffered',
+			onPresent({ scrollTop, padding, paused: held }) {
+				const fixed = held || padding === 0;
+				anchor.style.height = fixed ? '0px' : `${Math.max(0, scrollTop)}px`;
+				surface.style.position = fixed ? 'fixed' : 'sticky';
+				surface.style.top = fixed ? '0px' : `${-padding}px`;
+				surface.style.bottom = fixed ? 'auto' : `${-padding}px`;
+			},
 			paused: paused || reduced.matches,
 			controls: false,
 			scrollContainer: window
 		});
-		if (!instance) return stopColorScheme;
+		if (!instance) return;
 		api = instance;
 		ready = true;
 
@@ -125,7 +135,6 @@
 			window.removeEventListener('pointermove', forwardPointer);
 			window.removeEventListener('pointerout', leavePointer);
 			reduced.removeEventListener('change', updateMotionPreference);
-			stopColorScheme();
 			instance.destroy();
 			api = null;
 		};
@@ -140,22 +149,44 @@
 	data-snow-amount={snowAmount}
 	data-paused={paused || reducedMotion}
 >
-	<div class="snow-surface">
-		<div class="snow-host" bind:this={host}></div>
+	<div class="snow-anchor" bind:this={anchor}></div>
+	<div class="snow-surface" bind:this={surface}>
+		<div class="snow-viewport">
+			<div class="snow-host" bind:this={host}></div>
+		</div>
 	</div>
 </div>
 
 <style>
 	.snow-background {
-		position: fixed;
+		position: absolute;
 		inset: 0;
-		z-index: 0;
+		z-index: -1;
 		pointer-events: none;
-		overflow: hidden;
+		/* Clipping must not create a scroll container around the sticky cache. */
+		overflow: clip;
 		background: var(--background, #ffffff);
 	}
 
 	.snow-surface {
+		position: sticky;
+		top: 0;
+		width: 100%;
+		will-change: transform;
+		/* Sticky travel uses the visible height, even when the address bar opens. */
+		height: 100vh;
+		height: 100dvh;
+	}
+	:global(:root:not([data-theme='dark'])) .snow-surface {
+		/* Blend against the CSS backdrop, including browser-only darkening.
+		   White restores the original bitmap: |1 - (1 - pixel)| = pixel.
+		   A dark painted backdrop instead reveals the inverted light scene.
+		   Keep this on the existing surface so cached scrolling stays native. */
+		filter: invert(1);
+		mix-blend-mode: difference;
+	}
+
+	.snow-viewport {
 		width: 100%;
 		/* Keep the drawing surface stable while browser chrome changes the clip. */
 		height: 100vh;
@@ -169,5 +200,6 @@
 
 	.snow-host :global(.snow-stage) {
 		border-radius: 0;
+		overflow: visible;
 	}
 </style>

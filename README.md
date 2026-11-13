@@ -47,29 +47,48 @@ request links to the downloadable artifact in this directory.
 - `src/lib/snow-settings.json` preserves the supplied settings values.
 - The site overrides `scrollMode` to `camera`, reversing the supplied preset's
   `cameraSame` direction: scrolling down moves the snow and clouds upward.
-- Scroll redraws follow the preset's 12fps cadence instead of rendering the
-  entire backdrop at the display refresh rate. `scrollBlur: 0` removes the
-  expensive speed-dependent exposure while preserving the preset's normal
-  falling-snow blur, camera motion, and cloud movement.
+- The renderer paints a 128-logical-pixel margin above and below the viewport.
+  A clipped sticky surface scrolls that cached image with the document between
+  the preset's 12fps captures. It recenters the reusable margin when the next
+  picture is presented; exhausting the margin holds its edge until that capture.
+  Scrolling therefore responds without a full redraw or a JavaScript animation
+  frame. Buffered scroll moves the whole picture at the document's 1:1 rate;
+  individual snow depths and clouds keep their ordinary animated motion.
+  `scrollBlur: 0` avoids expensive speed-dependent exposure while preserving
+  the preset's normal falling-snow blur.
 - The top of the document uses the original `snowAmount: 1`. Any scroll below
   the top reduces it to `0.25`; returning to the top restores it to `1`. The
   renderer transitions particle count without restarting the scene.
-- The page and snow scene follow the system's light or dark color scheme,
-  including changes while the page is open. Theme changes keep the existing
-  canvas, scroll density, and pause state.
-- Chromium's forced darkening is detected independently of `prefers-color-scheme`
-  through a CSS system-color probe. The page, canvas, symbol, and browser theme
-  color share the resolved palette. The probe is checked when preferences,
-  focus, or visibility change and once per second while visible; it never runs
-  in a scroll handler. Chromium's auto-dark mode covers this behavior in tests.
-  The user confirmed that the standalone HTML still fails in Samsung Internet.
-  Its forced-dark behavior remains unresolved; the Chromium tests do not verify
-  Samsung's paint transformations.
+- Natural falling snow re-enters through spaced, inward-moving routes when it
+  leaves the view. This prevents depth changes from repeatedly bouncing the
+  same particles between opposite edges and concentrating long-running inlets.
+  Scroll-driven camera movement keeps its continuous transport behavior.
+- The header's light/dark toggle switches the page, symbol, snow scene, and
+  browser theme color together. An explicit choice is stored as `seorii-theme`
+  and takes priority over system changes. Until a choice is made, the page
+  follows the system preference, including changes while open. Theme changes
+  keep the existing canvas, scroll density, and pause state.
+- A small head script applies a saved theme before the page renders. The
+  standalone review embeds the same script from `src/app.html`. If storage is
+  blocked, the toggle still works for the current page.
+- The light snow surface uses an inverted bitmap and `difference` blending
+  against its CSS backdrop. A white backdrop restores the original scene;
+  when a browser darkens that backdrop at paint time, the bright canvas can no
+  longer cover it. The static symbol uses the same composition. The native
+  dark palette keeps normal composition. No color probe, polling, or additional
+  scroll handler is needed, and the existing cached surface stays in place.
+- Forced-dark regression tests measure screenshot contrast with a light media
+  preference, including the offline HTML. They exercise Chromium's paint
+  transformation, not Samsung Internet itself. The earlier CSS system-color
+  detector failed on the user's Samsung device and has been removed; this
+  composition still needs confirmation on that device.
 - The translucent reading surface keeps the snow visible behind the content.
 - The snow stage uses the large viewport height (`100lvh`, with a `100vh`
-  fallback) inside a clipped fixed viewport. Mobile browser toolbars can change
-  the visible area without resizing the canvas; window and orientation changes
-  still update the scene dimensions.
+  fallback) inside the page's clipped background. The logical viewport stays
+  separate from the drawing margin. Mobile browser toolbars can change the
+  visible area without resizing the canvas; window and orientation changes
+  still update the scene dimensions. Paused snow uses a fixed surface so both
+  animation and scroll movement stop.
 - The mobile introduction follows its content height, keeping the profile
   links close to the introduction instead of leaving a large empty gap.
 - The original snowflake symbol is a static image within the first screen.
