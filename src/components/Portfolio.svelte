@@ -403,6 +403,11 @@
 		place-items: center;
 		padding: 40px 0;
 	}
+	:global(:root:not([data-theme='dark'])) .hero-symbol {
+		/* Keep the static bitmap distinct from a browser-darkened backdrop. */
+		filter: invert(1);
+		mix-blend-mode: difference;
+	}
 	.symbol-halo {
 		position: absolute;
 		width: 100%;

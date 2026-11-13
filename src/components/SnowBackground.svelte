@@ -177,6 +177,14 @@
 		height: 100vh;
 		height: 100dvh;
 	}
+	:global(:root:not([data-theme='dark'])) .snow-surface {
+		/* Blend against the CSS backdrop, including browser-only darkening.
+		   White restores the original bitmap: |1 - (1 - pixel)| = pixel.
+		   A dark painted backdrop instead reveals the inverted light scene.
+		   Keep this on the existing surface so cached scrolling stays native. */
+		filter: invert(1);
+		mix-blend-mode: difference;
+	}
 
 	.snow-viewport {
 		width: 100%;

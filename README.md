@@ -71,6 +71,17 @@ request links to the downloadable artifact in this directory.
 - A small head script applies a saved theme before the page renders. The
   standalone review embeds the same script from `src/app.html`. If storage is
   blocked, the toggle still works for the current page.
+- The light snow surface uses an inverted bitmap and `difference` blending
+  against its CSS backdrop. A white backdrop restores the original scene;
+  when a browser darkens that backdrop at paint time, the bright canvas can no
+  longer cover it. The static symbol uses the same composition. The native
+  dark palette keeps normal composition. No color probe, polling, or additional
+  scroll handler is needed, and the existing cached surface stays in place.
+- Forced-dark regression tests measure screenshot contrast with a light media
+  preference, including the offline HTML. They exercise Chromium's paint
+  transformation, not Samsung Internet itself. The earlier CSS system-color
+  detector failed on the user's Samsung device and has been removed; this
+  composition still needs confirmation on that device.
 - The translucent reading surface keeps the snow visible behind the content.
 - The snow stage uses the large viewport height (`100lvh`, with a `100vh`
   fallback) inside the page's clipped background. The logical viewport stays
