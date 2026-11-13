@@ -99,6 +99,10 @@ request links to the downloadable artifact in this directory.
 - The original snowflake symbol is a static image within the first screen.
 - The background respects reduced motion, pauses in hidden tabs, and can be
   paused manually. It does not intercept links, keyboard input, or scrolling.
+- Manual pause and resume ease the scene clock over 400 milliseconds, slowing
+  or accelerating the existing snow, watercolor and film without replacing the
+  canvas or fading the picture. Reversing a transition continues from its
+  current speed. Reduced motion and hidden pages still stop immediately.
 - Korean and English retain the existing biography, projects, open source, and
   awards. Browser language selects the initial language; the KO/EN controls
   persist an explicit preference when storage is available.

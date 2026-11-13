@@ -72,6 +72,21 @@ and resource disposal. The wrapper forwards pointer movement without blocking
 links or scrolling, because the decorative canvas has `pointer-events: none`.
 The studio controls stay hidden and inaccessible.
 
+`setPaused(value, { duration })` optionally eases the simulation clock over the
+given number of milliseconds. The default call remains immediate. During a
+smooth pause the renderer continues until its clock rate reaches zero, then
+uses the existing held-frame pause path; `api.paused` becomes true when it
+settles. Resume starts from zero rate. Mid-transition requests preserve the
+current rate and particle state. Diagnostics expose the current clock rate,
+requested pause target and whether a transition is in progress under `motion`.
+This does not modify settings, rebuild particles or change the configured film
+cadence. During easing, full captures keep the configured wall-clock fps while
+the displayed poses slow down; returning to ordinary film ticks cannot sample
+before the last eased picture. The portfolio requests 400 milliseconds only
+for manual changes.
+Reduced motion, hidden/offscreen suspension and calls without a duration settle
+immediately instead of leaving an easing loop running.
+
 The viewer-export modules are retained because the original engine imports
 them. They are not invoked by the portfolio. Standalone portfolio previews are
 built by the application's review build, not the engine's viewer export.
