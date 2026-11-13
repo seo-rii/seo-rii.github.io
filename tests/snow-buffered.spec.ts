@@ -315,6 +315,263 @@ test('paused cached pixels move immediately and top-boundary round trips keep th
 	expect(jumps.anchor).toBe(0);
 });
 
+test('large scroll bursts reanchor the already visible held scene without a catch-up jump', async ({
+	page
+}) => {
+	await mountScene(page);
+	await page.evaluate(() => (window as HarnessWindow).bufferedScene.api.setPaused(true));
+	const held = await page.evaluate(() => {
+		const scene = (window as HarnessWindow).bufferedScene;
+		return { diagnostics: scene.read(), geometry: scene.geometry() };
+	});
+
+	// Several events can arrive before the same capture. Reversing while still
+	// beyond one cache edge must not accumulate a different camera displacement.
+	for (const positions of [
+		[4000, 2000, 3500],
+		[0, 1200, 0],
+		[4000, 0, 4000],
+		[4400, 4200, 4003],
+		[0, 1, 0]
+	]) {
+		const beforeInput = await page.evaluate(() => (window as HarnessWindow).bufferedScene.read());
+		await page.evaluate((positions) => {
+			const scene = (window as HarnessWindow).bufferedScene;
+			for (const top of positions) scene.input(top - scrollY);
+		}, positions);
+		const beforeCapture = await page.evaluate(() => {
+			const scene = (window as HarnessWindow).bufferedScene;
+			return { diagnostics: scene.read(), geometry: scene.geometry() };
+		});
+		const visible = await screenSnowPoints(page, true);
+		expect(visible.length, 'Track the snow currently visible at the cache edge').toBeGreaterThan(5);
+		expectCoverage(beforeCapture.geometry);
+		expect(beforeCapture.diagnostics.performance.renderSamples).toBe(
+			beforeInput.performance.renderSamples
+		);
+		await page.evaluate(() => {
+			const scene = (window as HarnessWindow).bufferedScene;
+			for (let i = 0; i < 6; i++) scene.frame();
+		});
+		const afterCapture = await page.evaluate(() => {
+			const scene = (window as HarnessWindow).bufferedScene;
+			return {
+				diagnostics: scene.read(),
+				geometry: scene.geometry(),
+				presentation: scene.presentation()
+			};
+		});
+		expect(
+			screenDisplacement(visible, await screenSnowPoints(page)),
+			'Replenishing the reserve preserves the held marks already visible before capture'
+		).toBeLessThan(0.02);
+		expect(afterCapture.diagnostics.time).toBe(held.diagnostics.time);
+		expect(afterCapture.diagnostics.layerTimes).toEqual(held.diagnostics.layerTimes);
+		expect(afterCapture.diagnostics.captureCount).toBe(held.diagnostics.captureCount);
+		expect(afterCapture.presentation.scrollTop).toBe(positions.at(-1));
+		expectCoverage(afterCapture.geometry);
+		for (const key of ['backingWidth', 'backingHeight', 'canvases'] as const) {
+			expect(afterCapture.geometry[key]).toBe(held.geometry[key]);
+		}
+		await page.evaluate(() => {
+			const scene = (window as HarnessWindow).bufferedScene;
+			for (let i = 0; i < 12; i++) scene.frame();
+		});
+		const idle = await page.evaluate(() => (window as HarnessWindow).bufferedScene.read());
+		expect(idle.scroll).toEqual(afterCapture.diagnostics.scroll);
+		expect(idle.performance.renderSamples).toBe(afterCapture.diagnostics.performance.renderSamples);
+	}
+
+	const beforeSmall = await page.evaluate(() => {
+		const scene = (window as HarnessWindow).bufferedScene;
+		return { diagnostics: scene.read(), geometry: scene.geometry() };
+	});
+	await page.evaluate(() => (window as HarnessWindow).bufferedScene.input(8));
+	const immediateSmall = await page.evaluate(() => {
+		const scene = (window as HarnessWindow).bufferedScene;
+		return { diagnostics: scene.read(), geometry: scene.geometry() };
+	});
+	expect(
+		immediateSmall.geometry.y - beforeSmall.geometry.y,
+		'A small movement after a burst immediately uses the replenished reserve'
+	).toBeCloseTo(-8, 4);
+	expect(immediateSmall.diagnostics.performance.renderSamples).toBe(
+		beforeSmall.diagnostics.performance.renderSamples
+	);
+	const smallVisible = await screenSnowPoints(page, true);
+	await page.evaluate(() => {
+		const scene = (window as HarnessWindow).bufferedScene;
+		for (let i = 0; i < 6; i++) scene.frame();
+	});
+	const afterSmall = await page.evaluate(() => (window as HarnessWindow).bufferedScene.read());
+	expect(screenDisplacement(smallVisible, await screenSnowPoints(page))).toBeLessThan(0.02);
+	expect(
+		afterSmall.scroll.backgroundOffset - beforeSmall.diagnostics.scroll.backgroundOffset,
+		'Clouds use the same accepted eight-pixel movement without an old catch-up delta'
+	).toBeCloseTo((-8 * afterSmall.logicalWidth) / beforeSmall.geometry.width, 6);
+	expect(afterSmall.time).toBe(held.diagnostics.time);
+	expect(afterSmall.layerTimes).toEqual(held.diagnostics.layerTimes);
+});
+
+test('switching scroll containers starts bounded travel from the new scroll origin', async ({
+	page
+}) => {
+	await mountScene(page);
+	const result = await page.evaluate(() => {
+		const scene = (window as HarnessWindow).bufferedScene;
+		const settle = () => {
+			for (let i = 0; i < 6; i++) scene.frame();
+		};
+		scene.api.setPaused(true);
+		const original = scene.read();
+		const width = scene.geometry().width;
+		scene.input(8);
+		settle();
+		const windowStep = scene.read();
+
+		// The holder in this harness follows document coordinates. Test the API's
+		// camera and anchor directly while the scroller has its own coordinate space.
+		const scroller = document.createElement('div');
+		scroller.style.cssText =
+			'position:fixed;left:-1000px;top:0;width:240px;height:180px;overflow:auto';
+		const content = document.createElement('div');
+		content.style.height = '2000px';
+		scroller.append(content);
+		document.body.append(scroller);
+		scroller.scrollTop = 700;
+		scene.api.setScrollContainer(scroller);
+		const switched = { diagnostics: scene.read(), presentation: scene.presentation() };
+		scroller.scrollTop += 8;
+		scroller.dispatchEvent(new Event('scroll'));
+		settle();
+		const elementStep = { diagnostics: scene.read(), presentation: scene.presentation() };
+
+		scene.api.setScrollContainer(window);
+		const restored = { diagnostics: scene.read(), presentation: scene.presentation() };
+		scene.input(8);
+		settle();
+		const nextWindowStep = { diagnostics: scene.read(), presentation: scene.presentation() };
+		for (let i = 0; i < 12; i++) scene.frame();
+		const idle = scene.read();
+		scroller.remove();
+		return { original, width, windowStep, switched, elementStep, restored, nextWindowStep, idle };
+	});
+	const cameraStep =
+		result.windowStep.scroll.cameraPosition - result.original.scroll.cameraPosition;
+	const cloudStep = (-8 * result.original.logicalWidth) / result.width;
+	expect(cameraStep).toBeGreaterThan(0);
+	expect(
+		result.windowStep.scroll.backgroundOffset - result.original.scroll.backgroundOffset
+	).toBeCloseTo(cloudStep, 6);
+	expect(result.switched.presentation.scrollTop).toBe(700);
+	expect(result.switched.diagnostics.scroll.cameraPosition).toBe(
+		result.windowStep.scroll.cameraPosition
+	);
+	expect(result.switched.diagnostics.scroll.backgroundOffset).toBe(
+		result.windowStep.scroll.backgroundOffset
+	);
+	expect(result.elementStep.presentation.scrollTop).toBe(708);
+	expect(
+		result.elementStep.diagnostics.scroll.cameraPosition -
+			result.switched.diagnostics.scroll.cameraPosition,
+		'The first movement in a different scroller is eight pixels, not an old-anchor overflow'
+	).toBeCloseTo(cameraStep, 6);
+	expect(
+		result.elementStep.diagnostics.scroll.backgroundOffset -
+			result.switched.diagnostics.scroll.backgroundOffset
+	).toBeCloseTo(cloudStep, 6);
+	expect(result.restored.presentation.scrollTop).toBe(8);
+	expect(result.restored.diagnostics.scroll.cameraPosition).toBe(
+		result.elementStep.diagnostics.scroll.cameraPosition
+	);
+	expect(result.restored.diagnostics.scroll.backgroundOffset).toBe(
+		result.elementStep.diagnostics.scroll.backgroundOffset
+	);
+	expect(result.nextWindowStep.presentation.scrollTop).toBe(16);
+	expect(
+		result.nextWindowStep.diagnostics.scroll.cameraPosition -
+			result.restored.diagnostics.scroll.cameraPosition
+	).toBeCloseTo(cameraStep, 6);
+	expect(
+		result.nextWindowStep.diagnostics.scroll.backgroundOffset -
+			result.restored.diagnostics.scroll.backgroundOffset
+	).toBeCloseTo(cloudStep, 6);
+	for (const diagnostics of [
+		result.windowStep,
+		result.switched.diagnostics,
+		result.elementStep.diagnostics,
+		result.restored.diagnostics,
+		result.nextWindowStep.diagnostics,
+		result.idle
+	]) {
+		expect(diagnostics.time).toBe(result.original.time);
+		expect(diagnostics.layerTimes).toEqual(result.original.layerTimes);
+		expect(diagnostics.captureCount).toBe(result.original.captureCount);
+	}
+	expect(result.idle.scroll).toEqual(result.nextWindowStep.diagnostics.scroll);
+	expect(result.idle.performance.renderSamples).toBe(
+		result.nextWindowStep.diagnostics.performance.renderSamples
+	);
+});
+
+test('large running scroll bursts retain capture cadence and leave no deferred camera travel', async ({
+	page
+}) => {
+	test.setTimeout(60_000);
+	await mountScene(page);
+	const result = await page.evaluate(() => {
+		const scene = (window as HarnessWindow).bufferedScene;
+		const before = scene.read();
+		const geometry = scene.geometry();
+		const logicalPadding = (scene.presentation().padding * before.logicalWidth) / geometry.width;
+		const coverage: Geometry[] = [];
+		const captureTravel: number[] = [];
+		let captureCount = before.captureCount;
+		let capturedOffset = before.scroll.backgroundOffset;
+		for (let i = 0; i < 60; i++) {
+			scene.frame(i < 30 ? 500 : -500);
+			coverage.push(scene.geometry());
+			const current = scene.read();
+			if (current.captureCount !== captureCount) {
+				captureTravel.push(Math.abs(current.scroll.backgroundOffset - capturedOffset));
+				capturedOffset = current.scroll.backgroundOffset;
+				captureCount = current.captureCount;
+			}
+		}
+		const after = scene.read();
+		for (let i = 0; i < 30; i++) scene.frame();
+		return {
+			before,
+			after,
+			idle: scene.read(),
+			geometry,
+			final: scene.geometry(),
+			logicalPadding,
+			captureTravel,
+			coverage
+		};
+	});
+	const captures = result.after.captureCount - result.before.captureCount;
+	expect(captures).toBeGreaterThanOrEqual(11);
+	expect(captures).toBeLessThanOrEqual(13);
+	expect(result.after.performance.renderSamples - result.before.performance.renderSamples).toBe(
+		captures
+	);
+	expect(
+		result.after.performance.scrollReprojections - result.before.performance.scrollReprojections
+	).toBe(0);
+	for (const travel of result.captureTravel) {
+		// A reversal can cross from one cached edge to the opposite edge.
+		expect(travel).toBeLessThanOrEqual(result.logicalPadding * 2 + 0.001);
+	}
+	expect(result.idle.scroll.cameraPosition).toBe(result.after.scroll.cameraPosition);
+	expect(result.idle.scroll.backgroundOffset).toBe(result.after.scroll.backgroundOffset);
+	for (const geometry of result.coverage) expectCoverage(geometry);
+	for (const key of ['backingWidth', 'backingHeight', 'canvases'] as const) {
+		expect(result.final[key]).toBe(result.geometry[key]);
+	}
+});
+
 test('buffered scrolling keeps capture cadence, reverses immediately and bounds buffer allocation', async ({
 	page
 }) => {

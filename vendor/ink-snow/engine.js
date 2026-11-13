@@ -695,13 +695,14 @@ void main(){
     previousScrollTop=top;
     lastScrollEventMs=now;
     if(!settings.scrollWind||paused&&!isBufferedScroll()||suspended||document.hidden||!visible)return;
-    // Legacy modes ignore discontinuous page jumps. Buffered framing also
-    // absorbs those jumps because its displayed layer follows native scroll.
+    // Legacy modes ignore discontinuous page jumps. Buffered framing accepts
+    // the position but limits its decorative pan to the displayed cache below.
     if(!Number.isFinite(delta)||!Number.isFinite(gap)||gap<0)return;
     const limit=Math.max(1200,scrollViewportHeight(scrollContainer)*1.8);
     if(Math.abs(delta)>limit&&!isBufferedScroll()){scrollIgnored++;return;}
-    // No per-event, accumulated-impulse, or positive velocity ceiling.
-    // Wheel and trackpad gestures remain proportional to their actual travel.
+    // Legacy gestures retain their proportional camera/velocity response.
+    // Buffered transport must match only the travel its native cache can show.
+    let bufferedTravel=0;
     if(isCameraScrollMode()){
       // Default: downward page scroll moves the view downward, snow upward.
       // Legacy cameraSame reverses that displacement. Buffered photographs
@@ -710,8 +711,17 @@ void main(){
       // Convert CSS scroll pixels to this canvas's logical camera units.
       const pixelScale=W/Math.max(1,cssWidth);
       const strength=isBufferedScroll()?1:.72*settings.scrollStrength;
-      scrollCameraGoal+=direction*delta*pixelScale*(6/CAMERA.focal)*strength;
-      if(delta!==0&&strength>0){
+      const priorGoal=scrollCameraGoal;
+      if(isBufferedScroll()){
+        // The sticky holder stops at its reserve edge. Reanchor that visible
+        // image, not the unseen overshoot, or the next 12fps capture will jump.
+        // Use one absolute capture anchor so bursts and reversals cannot add
+        // multiple capped deltas while the same picture is still displayed.
+        const offset=Math.max(-renderPadding,Math.min(renderPadding,(top-frameScrollTop)*pixelScale));
+        scrollCameraGoal=frameCamera+offset*(6/CAMERA.focal);
+        bufferedTravel=(scrollCameraGoal-priorGoal)*CAMERA.focal/6;
+      }else scrollCameraGoal+=direction*delta*pixelScale*(6/CAMERA.focal)*strength;
+      if(Math.abs(scrollCameraGoal-priorGoal)>1e-12){
         if(!scrollCameraDirty)scrollInputMs=now;
         scrollCameraDirty=true;
       }
@@ -721,8 +731,8 @@ void main(){
       scrollMagnitudeImpulse+=Math.abs(delta)*1.5;
     }
     if(isBufferedScroll()){
-      // The native scroll layer moves the complete photograph at 1:1 speed.
-      pendingCloudY-=delta*(W/Math.max(1,cssWidth));
+      // Clouds and snow keep the same visible, reserve-limited displacement.
+      pendingCloudY-=bufferedTravel;
     }else if(settings.scrollClouds&&settings.scrollCloudStrength>0){
       const signed=settings.scrollMode==='camera'?-delta:
         settings.scrollMode==='speed'&&settings.scrollBothDirections?Math.abs(delta):delta;
@@ -743,6 +753,11 @@ void main(){
     scrollContainer=next;
     scrollContainer.addEventListener('scroll',onPageScroll,{passive:true});
     resetScrollMotion();
+    if(rendererReady&&isBufferedScroll()){
+      // A different scroller has a different origin. Start its bounded travel
+      // from a freshly anchored held frame, without advancing the scene clock.
+      render(false,true);presentOutput(elapsed,true);
+    }
   }
   function applyScrollCamera(now){
     if(!scrollCameraDirty||!settings.scrollWind||!isCameraScrollMode())return false;

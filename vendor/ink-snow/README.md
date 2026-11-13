@@ -49,7 +49,8 @@ over long runs. A new generation discards the old particle's rendering history;
 large flakes start beyond their optical footprint. If no route can enter the
 view, the flake stays offscreen and retries after 0.25 seconds of simulation
 time. Neighbor searches are deferred until a viable route is found. Camera
-scroll transport retains its original modulo position and overshoot behavior.
+scroll transport retains modulo positions, with buffered travel limited to
+the portion actually displayed by its cached viewport.
 
 The portfolio uses the package's public `mountInkSnow` API from
 `src/components/SnowBackground.svelte`. The original settings file is preserved
@@ -62,6 +63,13 @@ speed-dependent snow-kernel expansion and five-pass cloud exposure during fast
 scrolling, while retaining the preset's ordinary snow blur. It selects
 `scrollFrameRate: 'buffered'` to keep captures at the preset's 12fps while its
 clipped native scroll layer moves between captures.
+The buffer follows small scrolls immediately at 1:1. Once the native holder
+reaches its reserve edge, the next capture applies only that visible movement,
+using its last presented anchor as the reference. Excess travel is discarded
+rather than jumping at recapture or building a delayed catch-up queue. Snow
+and watercolor use the same bounded displacement, including direction changes
+before the next capture. This keeps the existing raster dimensions, particle
+reservoir and capture budget for both running and paused scenes.
 Only `snowAmount` changes with scrolling:
 100% at the top of the document and 25% below it. The engine
 fades individual particles, so this reduces their count without resetting the
