@@ -42,7 +42,7 @@ export interface InkSnowOptions {
   debug?:boolean;
   onSettingsChange?:(settings:InkSnowSettings)=>void;
   onPausedChange?:(paused:boolean)=>void;
-  /** Called after presentation. scrollTop anchors that bitmap; padding uses CSS pixels. */
+  /** scrollTop anchors the bitmap; padding uses CSS pixels. paused freezes time, not buffered scroll. */
   onPresent?:(frame:{scrollTop:number;padding:number;paused:boolean})=>void;
   onReady?:(api:InkSnowAPI)=>void;
 }
